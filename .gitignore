@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# graphify (machine-local cache/interpreter pointers, not portable)
+graphify-out/cache/
+graphify-out/.graphify_python
+graphify-out/.graphify_root
