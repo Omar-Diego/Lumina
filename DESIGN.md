@@ -112,6 +112,14 @@ A notification bell (with a small red dot badge when unread) plus a user chip: c
 
 White fill, 1px `--border`, 16–20px radius, the soft shadow above, 20–24px padding. `.card-flat` drops the shadow (border only) for dense dashboard tiles that sit close together (agenda stat row).
 
+**Alignment in card grids:** whenever cards of the same row/grid carry variable-length content (a bio, a description, a variable number of tags), their internal components must still line up across the row — the CTA button in particular must start on the same line in every card, never drift depending on how much text sits above it. Implement this with:
+- The grid/row wrapper stays a flex/grid container with default (`stretch`) cross-axis alignment, so sibling cards in a row share the same height.
+- The card's content column is `flex h-full flex-col` so it actually fills that stretched height instead of leaving dead space.
+- Variable-length text (bios, descriptions) gets `line-clamp-2` (or `-3`) **plus** a matching `min-h` (e.g. `min-h-[48px]` for 2 lines at this system's body size) so short and long text reserve the same space — truncate with an ellipsis rather than letting the block grow or shrink.
+- The bottom-anchored block (secondary info + the CTA button) is wrapped together and pushed down with `mt-auto`, so it always sits flush with the card's bottom edge regardless of what's above it.
+
+See `TutorCard` in `app/page.tsx` for the reference implementation. Apply this same pattern to any future card grid (admin queue cards, subject cards, etc.) — never let a card's CTA "float" at a different height because a neighboring card happened to have shorter text.
+
 ### Step Card
 **Role:** Numbered "how it works" explainer card
 
@@ -162,6 +170,7 @@ Dark navy (`#0f1730` background, `#161f3d` topbar) — a different, deeper dark 
 - Reuse the Session Row / Card / Badge components verbatim across screens — a status pill or list row should look identical whether it's on the student agenda, the tutor's sessions, or the admin queue.
 - Keep the authenticated app topbar (bell + user chip) present and in the same position on every signed-in screen.
 - Keep the Admin surface visually distinct (dark, separate topbar, domain chip) — never let it share chrome with the student/tutor sidebar shell.
+- In any row/grid of cards with variable-length content, anchor the CTA (and any bottom-of-card block) with `mt-auto` on a stretched, full-height flex column, and cap variable text with `line-clamp` + a matching `min-h` — see **Alignment in card grids** under Card above. A button that starts on a different line per card is a bug, not a content quirk.
 
 ### Don't
 - Don't color display headlines green — that was the previous brand reference's rule; this system moves headline color to Ink Navy and spends green on action/state only.
@@ -169,6 +178,7 @@ Dark navy (`#0f1730` background, `#161f3d` topbar) — a different, deeper dark 
 - Don't apply the decorative accent palette (pink, teal, purple, amber) to buttons, nav, or any action chrome — those colors live only inside subject-taxonomy chips/icons and status badges.
 - Don't ship the mockup's static fake `<select>`/`<input>` divs as real product code — they exist only for the Figma-export prototype (see Implementation Notes on each component).
 - Don't put the admin "Panel de administración" or any authenticated-only content (agenda, "Mi ...") on a public/pre-login page — if a nav item or link is shown, its destination must exist and must be scoped correctly to signed-in vs. public.
+- Don't let a card's internal components (CTA, secondary info) drift to a different vertical position because a sibling card in the same row has shorter or longer text — normalize with `line-clamp`/`min-h`/`mt-auto` instead of leaving it to chance.
 - Don't invent a new sidebar layout per page — every authenticated screen for a given role (student or tutor) shares one identical nav item list; only the active item changes.
 
 ## Surfaces
