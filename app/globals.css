@@ -1,26 +1,139 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-page-bg: var(--page-bg);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-pill: var(--radius-pill);
+  --radius-xl: calc(var(--radius-lg) * 1.4);
+  --radius-2xl: calc(var(--radius-lg) * 1.8);
+  --radius-3xl: calc(var(--radius-lg) * 2.2);
+  --radius-4xl: calc(var(--radius-lg) * 2.6);
+  --shadow-card: var(--shadow-card);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Tokens de marca — fuente de verdad: DESIGN.md. No editar valores acá sin actualizar ese archivo. */
+  --ink: #1e2a4a;
+  --gray-600: #54607a;
+  --gray-500: #6b7a99;
+  --gray-400: #9aa8c2;
+  --border: #e7ecf3;
+  --page-bg: #eff5fc;
+  --card-bg: #ffffff;
+
+  --green: #58cc02;
+  --green-dark: #46a300;
+  --green-light: #d9f7b3;
+
+  --blue: #2f6fee;
+  --blue-dark: #1e56c9;
+  --blue-light: #eaf1ff;
+  --blue-lighter: #f5f9ff;
+
+  --yellow: #f2a93b;
+  --yellow-light: #fef2de;
+  --yellow-text: #b4780c;
+  --purple: #8b5cf6;
+  --purple-light: #f1ebfe;
+  --red: #ef4444;
+  --red-light: #fde8e8;
+  --pink: #f472b6;
+  --pink-light: #feecf5;
+  --teal: #14b8a6;
+  --teal-light: #e1f7f3;
+
+  --shadow-card: 0 10px 30px rgba(30, 42, 74, 0.07), 0 2px 6px rgba(30, 42, 74, 0.04);
+
+  --radius-pill: 999px;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  /* Alias semánticos que espera shadcn/ui — todos apuntan a los tokens de arriba, nunca a un valor nuevo */
+  --background: var(--card-bg);
+  --foreground: var(--ink);
+  --card: var(--card-bg);
+  --card-foreground: var(--ink);
+  --popover: var(--card-bg);
+  --popover-foreground: var(--ink);
+  --primary: var(--green);
+  --primary-foreground: var(--card-bg);
+  --secondary: var(--blue-light);
+  --secondary-foreground: var(--blue-dark);
+  --muted: var(--blue-lighter);
+  --muted-foreground: var(--gray-500);
+  --accent: var(--blue-light);
+  --accent-foreground: var(--blue-dark);
+  --destructive: var(--red);
+  --destructive-foreground: var(--card-bg);
+  --input: var(--border);
+  --ring: var(--blue);
+
+  --chart-1: var(--green);
+  --chart-2: var(--blue);
+  --chart-3: var(--purple);
+  --chart-4: var(--yellow);
+  --chart-5: var(--teal);
+
+  --sidebar: var(--card-bg);
+  --sidebar-foreground: var(--gray-600);
+  --sidebar-primary: var(--green-light);
+  --sidebar-primary-foreground: var(--green-dark);
+  --sidebar-accent: var(--blue-lighter);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--blue);
+}
+
+/* Lumina es solo modo claro (ver DESIGN.md) — no existe bloque .dark, no usar next-themes ni clases dark:. */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply text-foreground;
+    background-color: var(--page-bg);
+  }
+  html {
+    @apply font-sans;
+  }
 }

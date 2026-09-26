@@ -15,6 +15,18 @@ Este repo es la demo funcional de **Lumina**, la plataforma de gestión de tutor
 
 El sistema de diseño de referencia es [`DESIGN.md`](./DESIGN.md). Cualquier componente, página o estilo nuevo debe alinearse con esos tokens.
 
+## Componentes UI
+
+- **Nunca crear un componente de UI desde cero** (botón, input, card, modal, dropdown, etc.). Siempre usar **shadcn/ui**.
+- **Todo componente de UI vive únicamente en `components/ui/`** (alias `@/components/ui`, configurado en `components.json`). No crear componentes de UI en otras carpetas (`app/`, `components/` a secas, etc.) — si algo es un control de interfaz, su archivo va en `components/ui/`.
+- **Antes de agregar cualquier elemento, verificar si ya existe** en `components/ui/` — reusar esa instancia. Nunca crear un componente paralelo o "similar" a uno que ya existe.
+- Si el componente shadcn necesario todavía no está instalado en el proyecto, instalarlo con la CLI: `pnpm dlx shadcn@latest add <componente>` (comando verificado con `/find-docs` contra la documentación oficial de shadcn/ui) — no escribir su JSX/CSS a mano. Esto lo coloca automáticamente en `components/ui/`.
+- Todo componente shadcn debe re-estilizarse según los tokens de [`DESIGN.md`](./DESIGN.md) (colores, radios, tipografía Nunito, sombras, spacing) — nunca queda con el tema default de shadcn ni con valores inventados fuera de esos tokens.
+- Ejemplo: si se pide "poner un botón", se usa el `<Button>` de shadcn (instalándolo primero si falta) con el estilo de Primary/Outline/Danger Outline Button que define DESIGN.md — nunca un `<button>` custom ni un segundo componente Button paralelo.
+- Objetivo: que un mismo tipo de control (botón, badge, card, input...) se vea y comporte idéntico en toda la app, sin variantes ad-hoc por pantalla.
+- **La app es solo modo claro (light mode), sin toggle de tema.** No instalar `next-themes`, no agregar `ThemeProvider`, no usar clases `dark:` ni el bloque `.dark` en CSS. `app/globals.css` no tiene selector `.dark` a propósito — si un componente de shadcn trae variantes `dark:`, se ignoran/eliminan al integrarlo.
+- **Estado actual:** shadcn/ui ya está inicializado (`components.json`, base "Base UI", preset "Nova"). Los tokens de color/radio/tipografía en `app/globals.css` ya están mapeados a DESIGN.md — la fuente Nunito se carga en `app/layout.tsx`. Falta instalar componentes individuales a medida que se pidan.
+
 ## Commits
 
 - Usar **Conventional Commits** (`feat:`, `fix:`, `refactor:`, etc.) para el mensaje del commit.
