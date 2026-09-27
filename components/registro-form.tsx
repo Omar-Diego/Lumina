@@ -7,6 +7,7 @@ import { Wand2 } from "lucide-react";
 
 import { generateSecurePassword } from "@/lib/generate-password";
 import { authClient } from "@/lib/auth-client";
+import { getDashboardPath } from "@/lib/dashboard-path";
 import { FormError } from "@/components/form-error";
 import { SocialAuthButtons } from "@/components/social-auth-buttons";
 import { Button } from "@/components/ui/button";
@@ -64,7 +65,7 @@ export function RegistroForm() {
       return;
     }
 
-    router.push("/");
+    router.push(getDashboardPath(role));
     router.refresh();
   }
 

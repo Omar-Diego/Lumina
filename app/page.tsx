@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import {
   Atom,
@@ -10,6 +11,7 @@ import {
   Clock,
   Code2,
   FlaskConical,
+  LayoutDashboard,
   Languages,
   Leaf,
   LogIn,
@@ -20,6 +22,8 @@ import {
   Users,
 } from "lucide-react";
 
+import { auth } from "@/lib/auth";
+import { getDashboardPath } from "@/lib/dashboard-path";
 import { cn } from "@/lib/utils";
 import { SiteFooter } from "@/components/site-footer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -191,22 +195,31 @@ const SUBJECTS = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const authHref = session ? getDashboardPath(session.user.role) : "/login";
+
   return (
     <>
-      <MarketingHeader />
+      <MarketingHeader isAuthenticated={!!session} authHref={authHref} />
       <main className="flex-1">
-        <Hero />
-        <TutoresDestacados />
+        <Hero authHref={authHref} />
+        <TutoresDestacados authHref={authHref} />
         <ComoFunciona />
-        <MateriasTeaser />
+        <MateriasTeaser authHref={authHref} />
       </main>
       <SiteFooter />
     </>
   );
 }
 
-function MarketingHeader() {
+function MarketingHeader({
+  isAuthenticated,
+  authHref,
+}: {
+  isAuthenticated: boolean;
+  authHref: string;
+}) {
   return (
     <header className="flex items-center justify-between gap-6 border-b border-[var(--border)] bg-card px-6 py-4 md:px-12">
       <Link href="/" className="flex items-center">
@@ -236,17 +249,26 @@ function MarketingHeader() {
       </nav>
 
       <div className="flex items-center gap-3">
-        <Button variant="outline" render={<Link href="/login" />}>
-          <LogIn className="size-4" />
-          Iniciar sesión
-        </Button>
-        <Button render={<Link href="/login" />}>Encontrar tutor</Button>
+        {isAuthenticated ? (
+          <Button render={<Link href={authHref} />}>
+            <LayoutDashboard className="size-4" />
+            Ir a mi cuenta
+          </Button>
+        ) : (
+          <>
+            <Button variant="outline" render={<Link href="/login" />}>
+              <LogIn className="size-4" />
+              Iniciar sesión
+            </Button>
+            <Button render={<Link href="/login" />}>Encontrar tutor</Button>
+          </>
+        )}
       </div>
     </header>
   );
 }
 
-function Hero() {
+function Hero({ authHref }: { authHref: string }) {
   return (
     <section className="mx-auto max-w-[1440px] px-6 pt-10 pb-16 md:px-12">
       <div className="flex flex-col items-center gap-10 lg:flex-row">
@@ -278,7 +300,7 @@ function Hero() {
                 options={SCHEDULE_OPTIONS}
               />
               <Button
-                render={<Link href="/login" />}
+                render={<Link href={authHref} />}
                 className="min-w-[180px] flex-1 justify-center"
               >
                 <Search className="size-4" />
@@ -365,7 +387,7 @@ function SelectField({
   );
 }
 
-function TutoresDestacados() {
+function TutoresDestacados({ authHref }: { authHref: string }) {
   return (
     <section
       id="tutores-destacados"
@@ -381,7 +403,7 @@ function TutoresDestacados() {
           </p>
         </div>
         <Link
-          href="/login"
+          href={authHref}
           className="text-[13px] font-bold text-[var(--blue-dark)]"
         >
           Ver todos los tutores
@@ -390,14 +412,20 @@ function TutoresDestacados() {
 
       <div className="flex flex-wrap gap-5">
         {TUTORS.map((tutor) => (
-          <TutorCard key={tutor.name} tutor={tutor} />
+          <TutorCard key={tutor.name} tutor={tutor} authHref={authHref} />
         ))}
       </div>
     </section>
   );
 }
 
-function TutorCard({ tutor }: { tutor: (typeof TUTORS)[number] }) {
+function TutorCard({
+  tutor,
+  authHref,
+}: {
+  tutor: (typeof TUTORS)[number];
+  authHref: string;
+}) {
   return (
     <Card className="min-w-[260px] flex-1">
       <CardContent className="flex h-full flex-col gap-4">
@@ -463,7 +491,7 @@ function TutorCard({ tutor }: { tutor: (typeof TUTORS)[number] }) {
           </div>
 
           <Button
-            render={<Link href="/login" />}
+            render={<Link href={authHref} />}
             className="w-full justify-center rounded-[var(--radius-md)] px-4 py-3"
           >
             Ver perfil
@@ -513,7 +541,7 @@ function ComoFunciona() {
   );
 }
 
-function MateriasTeaser() {
+function MateriasTeaser({ authHref }: { authHref: string }) {
   return (
     <section
       id="materias"
@@ -525,12 +553,13 @@ function MateriasTeaser() {
             Materias con más tutores disponibles
           </h2>
           <p className="mt-1 text-[14.5px] font-semibold text-[var(--gray-500)]">
-            Inicia sesión para ver el catálogo completo y filtrar por nivel y
-            área.
+            {authHref === "/login"
+              ? "Inicia sesión para ver el catálogo completo y filtrar por nivel y área."
+              : "Explora el catálogo completo y filtra por nivel y área."}
           </p>
         </div>
         <Link
-          href="/login"
+          href={authHref}
           className="text-[13px] font-bold text-[var(--blue-dark)]"
         >
           Ver todas las materias
@@ -541,7 +570,7 @@ function MateriasTeaser() {
         {SUBJECTS.map(({ icon: Icon, label, bg, fg }) => (
           <Link
             key={label}
-            href="/login"
+            href={authHref}
             className="flex min-w-[150px] flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--border)] bg-card px-4 py-3.5"
           >
             <span

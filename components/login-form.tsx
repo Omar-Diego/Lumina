@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
+import { getDashboardPath } from "@/lib/dashboard-path";
 import { FormError } from "@/components/form-error";
 import { SocialAuthButtons } from "@/components/social-auth-buttons";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export function LoginForm() {
     setError(null);
     setLoading(true);
 
-    const { error: signInError } = await authClient.signIn.email({
+    const { data, error: signInError } = await authClient.signIn.email({
       email,
       password,
     });
@@ -53,7 +54,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/");
+    router.push(getDashboardPath(data.user.role));
     router.refresh();
   }
 

@@ -52,7 +52,7 @@ export function SocialAuthButtons() {
 
     const { error: signInError } = await authClient.signIn.social({
       provider,
-      callbackURL: "/",
+      callbackURL: "/post-login",
       newUserCallbackURL: "/completar-perfil",
       errorCallbackURL: "/login",
     });

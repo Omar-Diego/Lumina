@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
+import { getDashboardPath } from "@/lib/dashboard-path";
 import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,7 +62,7 @@ export function CompletarPerfilForm({
       return;
     }
 
-    router.push("/");
+    router.push(getDashboardPath(role));
     router.refresh();
   }
 
