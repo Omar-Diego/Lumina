@@ -1,9 +1,15 @@
 import { betterAuth } from "better-auth";
+import { admin as adminPlugin } from "better-auth/plugins";
 import { dash } from "@better-auth/infra";
 import { i18n, locales } from "@better-auth/i18n";
 import { Pool } from "pg";
 import fs from "fs";
 import path from "path";
+
+import {
+  selfServiceRoleField,
+  selfServiceRolePlugin,
+} from "@/lib/auth-roles";
 
 const connectionString = new URL(process.env.POSTGRES_URL_NON_POOLING!);
 connectionString.searchParams.delete("sslmode");
@@ -59,14 +65,9 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      role: {
-        type: ["estudiante", "tutor"],
-        required: true,
-        input: true,
-        // ponytail: login social no puede preguntar el rol en el consentimiento
-        // del proveedor; se crea como "estudiante" y se corrige en /completar-perfil.
-        defaultValue: "estudiante",
-      },
+      // Kept here as well as in the post-admin plugin so the client can infer
+      // the field; plugin schema wins at runtime in declaration order.
+      role: selfServiceRoleField,
       escuela: {
         type: "string",
         required: false,
@@ -85,6 +86,13 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    adminPlugin({
+      // Los registros normales siguen entrando como estudiantes. El plugin
+      // `selfServiceRolePlugin` permite escoger estudiante/tutor, pero rechaza
+      // explícitamente `admin` en cualquier entrada pública.
+      defaultRole: "estudiante",
+    }),
+    selfServiceRolePlugin,
     dash({
       apiKey: process.env.BETTER_AUTH_API_KEY,
     }),

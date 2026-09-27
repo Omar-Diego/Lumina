@@ -14,14 +14,20 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     redirect("/login");
   }
 
+  const role = session.user.role;
+
+  if (role === "admin") {
+    redirect("/admin");
+  }
+
   return (
     <SidebarProvider
       style={{ "--sidebar-width": "264px" } as CSSProperties}
     >
-      <AppSidebar role={session.user.role} />
+      <AppSidebar role={role} />
       <SidebarInset className="bg-[var(--page-bg)]">
         <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-6 py-8 md:px-11">
-          <AppTopbar user={session.user} />
+          <AppTopbar user={{ ...session.user, role }} />
           {children}
         </div>
       </SidebarInset>
