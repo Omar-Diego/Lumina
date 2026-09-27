@@ -5,10 +5,14 @@ import { auth } from "@/lib/auth";
 import { getDashboardPath } from "@/lib/dashboard-path";
 
 export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
   const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set(
       "callbackUrl",
       `${request.nextUrl.pathname}${request.nextUrl.search}`,
