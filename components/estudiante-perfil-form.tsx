@@ -11,30 +11,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 const FIELD_CLASS =
   "h-auto rounded-[var(--radius-md)] border-[1.5px] border-[var(--border)] bg-[#f8fafd] px-4 py-3.5 text-[14.5px] font-bold text-[var(--ink)] placeholder:font-semibold placeholder:text-[var(--gray-400)] focus-visible:border-[var(--blue)] focus-visible:ring-[var(--blue)]/20";
 
-export function TutorPerfilForm({
+export function EstudiantePerfilForm({
   userId,
-  name,
-  image,
+  initialName,
+  initialImage,
+  email,
   initialEscuela,
-  initialSubjects,
-  initialBio,
 }: {
   userId: string;
-  name: string;
-  image?: string | null;
+  initialName: string;
+  initialImage?: string | null;
+  email: string;
   initialEscuela: string;
-  initialSubjects: string[];
-  initialBio: string;
 }) {
   const router = useRouter();
+  const [name, setName] = useState(initialName);
   const [escuela, setEscuela] = useState(initialEscuela);
-  const [materias, setMaterias] = useState(initialSubjects.join(", "));
-  const [bio, setBio] = useState(initialBio);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -46,12 +42,8 @@ export function TutorPerfilForm({
     setLoading(true);
 
     const { error: updateError } = await authClient.updateUser({
+      name,
       escuela: escuela || undefined,
-      subjects: materias
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      bio: bio || undefined,
     });
 
     setLoading(false);
@@ -70,24 +62,34 @@ export function TutorPerfilForm({
       <form onSubmit={handleSubmit}>
         <CardContent className="flex flex-col gap-5">
           <Avatar className="size-19 text-2xl">
-            {image ? <AvatarImage src={image} alt={name} /> : null}
+            {initialImage ? <AvatarImage src={initialImage} alt={initialName} /> : null}
             <AvatarFallback className={cn("font-extrabold text-white", getAvatarColor(userId))}>
-              {getInitials(name)}
+              {getInitials(name || initialName)}
             </AvatarFallback>
           </Avatar>
 
           <div className="flex flex-col gap-2">
-            <Label className="text-[13.5px] font-extrabold text-[var(--ink)]">
-              Nombre
+            <Label htmlFor="name" className="text-[13.5px] font-extrabold text-[var(--ink)]">
+              Nombre completo
             </Label>
-            <div className={FIELD_CLASS}>{name}</div>
+            <Input
+              id="name"
+              className={FIELD_CLASS}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label
-              htmlFor="escuela"
-              className="text-[13.5px] font-extrabold text-[var(--ink)]"
-            >
+            <Label className="text-[13.5px] font-extrabold text-[var(--ink)]">
+              Correo electrónico
+            </Label>
+            <div className={cn(FIELD_CLASS, "text-[var(--gray-500)]")}>{email}</div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="escuela" className="text-[13.5px] font-extrabold text-[var(--ink)]">
               Escuela
             </Label>
             <Input
@@ -99,44 +101,9 @@ export function TutorPerfilForm({
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label
-              htmlFor="materias"
-              className="text-[13.5px] font-extrabold text-[var(--ink)]"
-            >
-              Materias que imparto
-            </Label>
-            <Input
-              id="materias"
-              placeholder="Matemáticas, Física"
-              className={FIELD_CLASS}
-              value={materias}
-              onChange={(e) => setMaterias(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label
-              htmlFor="bio"
-              className="text-[13.5px] font-extrabold text-[var(--ink)]"
-            >
-              Descripción
-            </Label>
-            <Textarea
-              id="bio"
-              placeholder="Breve descripción de tu experiencia como tutor"
-              className="rounded-[var(--radius-md)] border-[1.5px] border-[var(--border)] bg-[#f8fafd] px-4 py-3.5 text-[14.5px] font-bold text-[var(--ink)] placeholder:font-semibold placeholder:text-[var(--gray-400)] focus-visible:border-[var(--blue)] focus-visible:ring-[var(--blue)]/20"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-            />
-          </div>
-
           {error && <FormError message={error} />}
           {saved && !error && (
-            <p className="text-[13.5px] font-bold text-[var(--green-dark)]">
-              Cambios guardados.
-            </p>
+            <p className="text-[13.5px] font-bold text-[var(--green-dark)]">Cambios guardados.</p>
           )}
 
           <Button

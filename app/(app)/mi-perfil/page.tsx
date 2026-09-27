@@ -4,6 +4,7 @@ import { CircleCheck } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { TutorPerfilForm } from "@/components/tutor-perfil-form";
+import { EstudiantePerfilForm } from "@/components/estudiante-perfil-form";
 
 export const metadata = {
   title: "Mi perfil · Lumina",
@@ -16,13 +17,28 @@ export default async function MiPerfilPage() {
     redirect("/login");
   }
 
-  // El panel de tutor es exclusivo del rol tutor; un estudiante no tiene
-  // perfil de tutor que editar.
-  if (session.user.role !== "tutor") {
-    redirect("/");
-  }
-
   const { user } = session;
+
+  if (user.role === "estudiante") {
+    return (
+      <>
+        <h1 className="text-[28px] leading-[1.2] font-black tracking-[-0.01em] text-[var(--ink)] md:text-[34px]">
+          Mi perfil
+        </h1>
+        <p className="mt-1.5 mb-6 text-base font-semibold text-[var(--gray-500)]">
+          Mantén tus datos actualizados.
+        </p>
+
+        <EstudiantePerfilForm
+          userId={user.id}
+          initialName={user.name}
+          initialImage={user.image}
+          email={user.email}
+          initialEscuela={user.escuela ?? ""}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -35,7 +51,9 @@ export default async function MiPerfilPage() {
       </span>
 
       <TutorPerfilForm
+        userId={user.id}
         name={user.name}
+        image={user.image}
         initialEscuela={user.escuela ?? ""}
         initialSubjects={user.subjects ?? []}
         initialBio={user.bio ?? ""}

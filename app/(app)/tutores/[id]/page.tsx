@@ -68,8 +68,18 @@ export default async function FichaTutorPage({
             </h1>
 
             <span className="my-2 flex w-fit items-center gap-1.5 text-[13px] font-bold text-[var(--gray-500)]">
-              <Star className="size-4 text-[var(--gray-400)]" />
-              Aún sin reseñas
+              {tutor.ratingCount > 0 ? (
+                <>
+                  <Star className="size-4 fill-[var(--yellow)] text-[var(--yellow)]" />
+                  <span className="font-extrabold text-[var(--ink)]">{tutor.ratingPromedio}</span>(
+                  {tutor.ratingCount})
+                </>
+              ) : (
+                <>
+                  <Star className="size-4 text-[var(--gray-400)]" />
+                  Aún sin reseñas
+                </>
+              )}
             </span>
 
             {tutor.escuela && (

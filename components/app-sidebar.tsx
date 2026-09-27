@@ -24,14 +24,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-// ponytail: solo /tutores existe hoy del lado estudiante. El resto queda
-// visible (fiel al mockup) pero deshabilitado hasta que esas pantallas se
-// construyan — así el side panel nunca enlaza a una ruta que todavía no existe.
 const ESTUDIANTE_NAV_ITEMS = [
   { label: "Tutores", icon: GraduationCap, href: "/tutores" },
-  { label: "Materias", icon: BookOpen, href: null },
-  { label: "Mis sesiones", icon: CalendarCheck, href: null },
-  { label: "Perfil", icon: User, href: null },
+  { label: "Materias", icon: BookOpen, href: "/materias" },
+  { label: "Mis sesiones", icon: CalendarCheck, href: "/mis-sesiones" },
+  { label: "Perfil", icon: User, href: "/mi-perfil" },
 ] as const;
 
 const TUTOR_NAV_ITEMS = [

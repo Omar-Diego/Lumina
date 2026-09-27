@@ -105,6 +105,73 @@ export async function getReservaConfirmada(
   return rows[0] ?? null;
 }
 
+export type SesionEstudiante = {
+  reservaId: string;
+  inicio: string;
+  fin: string;
+  tutorId: string;
+  tutorNombre: string;
+  calificacion: number | null;
+};
+
+export async function getSesionesEstudiante(
+  estudianteId: string,
+): Promise<SesionEstudiante[]> {
+  const { rows } = await pool.query<SesionEstudiante>(
+    `select
+       r.id as "reservaId",
+       fh.inicio,
+       fh.fin,
+       u.id as "tutorId",
+       u.name as "tutorNombre",
+       res.calificacion
+     from public.reserva r
+     join public.franja_horaria fh on fh.id = r.franja_id
+     join better_auth."user" u on u.id = fh.tutor_id
+     left join public.resena res on res.reserva_id = r.id
+     where r.estudiante_id = $1 and r.estado = 'confirmada'
+     order by fh.inicio`,
+    [estudianteId],
+  );
+  return rows;
+}
+
+export type ReservaParaCalificar = {
+  reservaId: string;
+  inicio: string;
+  fin: string;
+  tutorId: string;
+  tutorNombre: string;
+};
+
+// RF08: solo se puede calificar una sesión que ya terminó y que todavía no
+// tiene reseña — de ahí el filtro por fecha y el left join a resena en el
+// where, en vez de dejar que la página de calificar se abra para cualquier
+// reserva y fallar recién al enviar el formulario.
+export async function getReservaParaCalificar(
+  reservaId: string,
+  estudianteId: string,
+): Promise<ReservaParaCalificar | null> {
+  const { rows } = await pool.query<ReservaParaCalificar>(
+    `select
+       r.id as "reservaId",
+       fh.inicio,
+       fh.fin,
+       u.id as "tutorId",
+       u.name as "tutorNombre"
+     from public.reserva r
+     join public.franja_horaria fh on fh.id = r.franja_id
+     join better_auth."user" u on u.id = fh.tutor_id
+     left join public.resena res on res.reserva_id = r.id
+     where r.id = $1
+       and r.estudiante_id = $2
+       and fh.fin < now()
+       and res.id is null`,
+    [reservaId, estudianteId],
+  );
+  return rows[0] ?? null;
+}
+
 export type SesionTutor = {
   reservaId: string;
   inicio: string;

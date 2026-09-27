@@ -7,6 +7,8 @@ export type TutorListado = {
   subjects: string[];
   bio: string | null;
   proximasFranjas: { inicio: string; fin: string }[];
+  ratingPromedio: number | null;
+  ratingCount: number;
 };
 
 export type TutorPerfil = {
@@ -15,6 +17,8 @@ export type TutorPerfil = {
   escuela: string | null;
   subjects: string[];
   bio: string | null;
+  ratingPromedio: number | null;
+  ratingCount: number;
 };
 
 export type Franja = { id: string; inicio: string; fin: string };
@@ -29,6 +33,25 @@ export async function getMateriasDisponibles(): Promise<string[]> {
      order by 1`,
   );
   return rows.map((r) => r.materia);
+}
+
+export type MateriaResumen = { materia: string; tutorCount: number };
+
+// RF04: catálogo de materias para que el estudiante explore por tema en vez
+// de solo buscar tutores por nombre. El conteo sale de las materias que los
+// tutores ya declararon en su perfil (no hay una tabla de materias aparte).
+export async function getMateriasResumen(): Promise<MateriaResumen[]> {
+  const { rows } = await pool.query<{ materia: string; tutorCount: string }>(
+    `select materia, count(*) as "tutorCount"
+     from (
+       select distinct u.id, jsonb_array_elements_text(u.subjects) as materia
+       from better_auth."user" u
+       where u.role = 'tutor' and u.subjects is not null
+     ) t
+     group by materia
+     order by "tutorCount" desc, materia asc`,
+  );
+  return rows.map((r) => ({ materia: r.materia, tutorCount: Number(r.tutorCount) }));
 }
 
 export async function getTutores(params: {
@@ -62,7 +85,9 @@ export async function getTutores(params: {
        u.escuela,
        coalesce(u.subjects, '[]'::jsonb) as subjects,
        u.bio,
-       coalesce(f.proximas_franjas, '[]'::json) as "proximasFranjas"
+       coalesce(f.proximas_franjas, '[]'::json) as "proximasFranjas",
+       rt.promedio as "ratingPromedio",
+       coalesce(rt.total, 0) as "ratingCount"
      from better_auth."user" u
      left join lateral (
        select json_agg(
@@ -77,22 +102,55 @@ export async function getTutores(params: {
          limit 2
        ) fh
      ) f on true
+     left join lateral (
+       select round(avg(res.calificacion)::numeric, 1) as promedio, count(*) as total
+       from public.resena res
+       join public.reserva r on r.id = res.reserva_id
+       join public.franja_horaria fh2 on fh2.id = r.franja_id
+       where fh2.tutor_id = u.id
+     ) rt on true
      where ${conditions.join(" and ")}
      order by ${orderBy}`,
     values,
   );
 
-  return rows;
+  // pg devuelve numeric/bigint como string; los convertimos acá para que el
+  // resto de la app trabaje con TutorListado tal como lo declara el tipo.
+  return rows.map((r) => ({
+    ...r,
+    ratingPromedio: r.ratingPromedio === null ? null : Number(r.ratingPromedio),
+    ratingCount: Number(r.ratingCount),
+  }));
 }
 
 export async function getTutorPerfil(id: string): Promise<TutorPerfil | null> {
-  const { rows } = await pool.query<TutorPerfil>(
-    `select id, name, escuela, coalesce(subjects, '[]'::jsonb) as subjects, bio
-     from better_auth."user"
-     where id = $1 and role = 'tutor'`,
+  const { rows } = await pool.query(
+    `select
+       u.id,
+       u.name,
+       u.escuela,
+       coalesce(u.subjects, '[]'::jsonb) as subjects,
+       u.bio,
+       rt.promedio as "ratingPromedio",
+       coalesce(rt.total, 0) as "ratingCount"
+     from better_auth."user" u
+     left join lateral (
+       select round(avg(res.calificacion)::numeric, 1) as promedio, count(*) as total
+       from public.resena res
+       join public.reserva r on r.id = res.reserva_id
+       join public.franja_horaria fh on fh.id = r.franja_id
+       where fh.tutor_id = u.id
+     ) rt on true
+     where u.id = $1 and u.role = 'tutor'`,
     [id],
   );
-  return rows[0] ?? null;
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    ...row,
+    ratingPromedio: row.ratingPromedio === null ? null : Number(row.ratingPromedio),
+    ratingCount: Number(row.ratingCount),
+  };
 }
 
 export async function getFranjasDisponibles(tutorId: string): Promise<Franja[]> {
