@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 
 import { AdminLoginForm } from "@/components/admin-login-form";
 
@@ -21,7 +22,9 @@ export default function AdminLoginPage() {
           admin.lumina.app
         </span>
 
-        <AdminLoginForm />
+        <Suspense fallback={null}>
+          <AdminLoginForm />
+        </Suspense>
 
         <p className="mt-5 text-[13px] leading-5 font-bold text-[var(--admin-subtle)]">
           Acceso exclusivo del equipo administrador — no forma parte del sitio
