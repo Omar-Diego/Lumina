@@ -250,17 +250,19 @@ function MarketingHeader({
 
       <div className="flex items-center gap-3">
         {isAuthenticated ? (
-          <Button render={<Link href={authHref} />}>
+          <Button render={<Link href={authHref} />} nativeButton={false}>
             <LayoutDashboard className="size-4" />
             Ir a mi cuenta
           </Button>
         ) : (
           <>
-            <Button variant="outline" render={<Link href="/login" />}>
+            <Button variant="outline" render={<Link href="/login" />} nativeButton={false}>
               <LogIn className="size-4" />
               Iniciar sesión
             </Button>
-            <Button render={<Link href="/login" />}>Encontrar tutor</Button>
+            <Button render={<Link href="/login" />} nativeButton={false}>
+              Encontrar tutor
+            </Button>
           </>
         )}
       </div>
@@ -301,6 +303,7 @@ function Hero({ authHref }: { authHref: string }) {
               />
               <Button
                 render={<Link href={authHref} />}
+                nativeButton={false}
                 className="min-w-[180px] flex-1 justify-center"
               >
                 <Search className="size-4" />
@@ -492,6 +495,7 @@ function TutorCard({
 
           <Button
             render={<Link href={authHref} />}
+            nativeButton={false}
             className="w-full justify-center rounded-[var(--radius-md)] px-4 py-3"
           >
             Ver perfil

@@ -66,7 +66,7 @@ export default async function ReservaExitoPage({
           </CardContent>
         </Card>
 
-        <Button render={<Link href="/tutores" />} className="rounded-pill px-6 py-3">
+        <Button render={<Link href="/tutores" />} nativeButton={false} className="rounded-pill px-6 py-3">
           Volver a tutores
         </Button>
       </div>

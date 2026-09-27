@@ -304,6 +304,7 @@ function SesionRecienteRow({ sesion }: { sesion: SesionEstudiante }) {
       ) : (
         <Button
           render={<Link href={`/mis-sesiones/${sesion.reservaId}/calificar`} />}
+          nativeButton={false}
           variant="outline"
           size="sm"
           className="shrink-0"

@@ -84,6 +84,7 @@ export default function AdminVerificationPage() {
                         variant="outline"
                         size="sm"
                         render={<Link href={tutor.href} />}
+                        nativeButton={false}
                         className="border-[var(--admin-control-border)] bg-transparent text-[var(--admin-muted)] hover:bg-[var(--admin-hover-bg)] hover:text-[var(--admin-text)]"
                       >
                         Ver perfil completo

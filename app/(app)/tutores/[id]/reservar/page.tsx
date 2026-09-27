@@ -108,6 +108,7 @@ export default async function ConfirmarReservaPage({
             </form>
             <Button
               render={<Link href={`/tutores/${tutorId}`} />}
+              nativeButton={false}
               variant="outline"
               className="mt-3 w-full justify-center rounded-[var(--radius-md)] py-3.5"
             >
