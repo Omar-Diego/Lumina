@@ -15,6 +15,10 @@ export const auth = betterAuth({
       ca: fs.readFileSync(path.join(process.cwd(), "certs/supabase-ca.crt"), "utf8"),
     },
   }),
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL!,
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  ],
   emailAndPassword: {
     enabled: true,
   },
