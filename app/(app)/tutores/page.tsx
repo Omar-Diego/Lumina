@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { format, isToday, isTomorrow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Heart, Star } from "lucide-react";
@@ -158,7 +159,10 @@ function TutorCard({ tutor }: { tutor: TutorListado }) {
             )}
           </div>
 
-          <Button className="mt-3 w-full justify-center rounded-[var(--radius-md)] px-4 py-3">
+          <Button
+            render={<Link href={`/tutores/${tutor.id}`} />}
+            className="mt-3 w-full justify-center rounded-[var(--radius-md)] px-4 py-3"
+          >
             Ver perfil
           </Button>
         </div>

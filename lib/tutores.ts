@@ -9,6 +9,16 @@ export type TutorListado = {
   proximasFranjas: { inicio: string; fin: string }[];
 };
 
+export type TutorPerfil = {
+  id: string;
+  name: string;
+  escuela: string | null;
+  subjects: string[];
+  bio: string | null;
+};
+
+export type Franja = { id: string; inicio: string; fin: string };
+
 export type TutorSort = "nombre" | "recientes";
 
 export async function getMateriasDisponibles(): Promise<string[]> {
@@ -73,4 +83,64 @@ export async function getTutores(params: {
   );
 
   return rows;
+}
+
+export async function getTutorPerfil(id: string): Promise<TutorPerfil | null> {
+  const { rows } = await pool.query<TutorPerfil>(
+    `select id, name, escuela, coalesce(subjects, '[]'::jsonb) as subjects, bio
+     from better_auth."user"
+     where id = $1 and role = 'tutor'`,
+    [id],
+  );
+  return rows[0] ?? null;
+}
+
+export async function getFranjasDisponibles(tutorId: string): Promise<Franja[]> {
+  const { rows } = await pool.query<Franja>(
+    `select id, inicio, fin
+     from public.franja_horaria
+     where tutor_id = $1 and estado = 'libre' and inicio > now()
+     order by inicio`,
+    [tutorId],
+  );
+  return rows;
+}
+
+export type FranjaTutor = { id: string; inicio: string; fin: string; estado: "libre" | "ocupada" };
+
+export class FranjaSolapadaError extends Error {
+  constructor() {
+    super("Esa franja se solapa con un horario que ya publicaste");
+  }
+}
+
+export async function getFranjasTutor(tutorId: string): Promise<FranjaTutor[]> {
+  const { rows } = await pool.query<FranjaTutor>(
+    `select id, inicio, fin, estado
+     from public.franja_horaria
+     where tutor_id = $1 and inicio > now()
+     order by inicio`,
+    [tutorId],
+  );
+  return rows;
+}
+
+// RF05: "el sistema evita franjas que se solapen con otras ya publicadas".
+// Solo el propio tutor crea sus franjas (a diferencia de crearReserva, no hay
+// dos actores compitiendo por la misma fila), así que un select-luego-insert
+// simple basta sin el lock de transacción que sí necesita la reserva.
+export async function crearFranja(tutorId: string, inicio: Date, fin: Date): Promise<void> {
+  const { rows: solapadas } = await pool.query(
+    `select id from public.franja_horaria
+     where tutor_id = $1 and inicio < $3 and fin > $2`,
+    [tutorId, inicio.toISOString(), fin.toISOString()],
+  );
+  if (solapadas.length > 0) {
+    throw new FranjaSolapadaError();
+  }
+
+  await pool.query(
+    `insert into public.franja_horaria (tutor_id, inicio, fin) values ($1, $2, $3)`,
+    [tutorId, inicio.toISOString(), fin.toISOString()],
+  );
 }
