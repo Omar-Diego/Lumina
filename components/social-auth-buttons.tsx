@@ -42,7 +42,11 @@ const PROVIDERS = [
   { id: "github", label: "GitHub", icon: GitHubIcon },
 ] as const;
 
-export function SocialAuthButtons() {
+export function SocialAuthButtons({
+  callbackUrl = null,
+}: {
+  callbackUrl?: string | null;
+}) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,11 +54,14 @@ export function SocialAuthButtons() {
     setError(null);
     setPending(provider);
 
+    const callbackQuery = callbackUrl
+      ? `?callbackUrl=${encodeURIComponent(callbackUrl)}`
+      : "";
     const { error: signInError } = await authClient.signIn.social({
       provider,
-      callbackURL: "/post-login",
+      callbackURL: `/post-login${callbackQuery}`,
       newUserCallbackURL: "/completar-perfil",
-      errorCallbackURL: "/login",
+      errorCallbackURL: `/login${callbackQuery}`,
     });
 
     if (signInError) {

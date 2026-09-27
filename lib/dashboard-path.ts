@@ -8,6 +8,6 @@ import type { UserRole } from "@/lib/auth-roles";
  * basta para redirigir a todos los flujos de entrada.
  */
 export function getDashboardPath(role: UserRole): string {
-  if (role === "admin") return "/admin";
+  if (role === "admin") return "/admin/verificacion";
   return role === "estudiante" ? "/tutores" : "/mi-perfil";
 }

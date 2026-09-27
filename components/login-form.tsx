@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
+import { getSafeCallbackUrl } from "@/lib/callback-url";
 import { getDashboardPath } from "@/lib/dashboard-path";
 import { FormError } from "@/components/form-error";
 import { SocialAuthButtons } from "@/components/social-auth-buttons";
@@ -36,6 +37,7 @@ export function LoginForm() {
     return SOCIAL_ERROR_MESSAGES[code] ?? SOCIAL_ERROR_FALLBACK;
   });
   const [loading, setLoading] = useState(false);
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,7 +56,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push(getDashboardPath(data.user.role));
+    router.push(callbackUrl ?? getDashboardPath(data.user.role));
     router.refresh();
   }
 
@@ -115,7 +117,7 @@ export function LoginForm() {
             <span className="h-px flex-1 bg-[var(--border)]" />
           </div>
 
-          <SocialAuthButtons />
+          <SocialAuthButtons callbackUrl={callbackUrl} />
         </CardContent>
       </form>
     </Card>
