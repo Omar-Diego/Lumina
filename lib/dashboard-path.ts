@@ -1,4 +1,4 @@
-type Role = "estudiante" | "tutor";
+import type { UserRole } from "@/lib/auth-roles";
 
 /**
  * A dónde mandar a un usuario ya autenticado cuando "entra a la app"
@@ -7,6 +7,7 @@ type Role = "estudiante" | "tutor";
  * Este es el único lugar que decide "a dónde va cada rol" — cambiarlo aquí
  * basta para redirigir a todos los flujos de entrada.
  */
-export function getDashboardPath(role: Role): string {
+export function getDashboardPath(role: UserRole): string {
+  if (role === "admin") return "/admin/verificacion";
   return role === "estudiante" ? "/tutores" : "/mi-perfil";
 }

@@ -80,6 +80,27 @@
   --teal: #14b8a6;
   --teal-light: #e1f7f3;
 
+  --admin-bg: #0f1730;
+  --admin-topbar-bg: #161f3d;
+  --admin-card-bg: #1b2547;
+  --admin-border: #2a3560;
+  --admin-control-border: #3a4570;
+  --admin-text: #ffffff;
+  --admin-muted: #a8b4d2;
+  --admin-subtle: #91a2ca;
+  --admin-copy: #c8d2ea;
+  --admin-accent: #9bb1e8;
+  --admin-accent-bg: rgba(155, 177, 232, 0.12);
+  --admin-hover-bg: rgba(255, 255, 255, 0.05);
+  --admin-danger: #ff8585;
+  --admin-danger-bg: var(--red-light);
+  --admin-danger-fg: #8f1616;
+  --admin-pending-bg: var(--yellow-light);
+  --admin-pending-fg: #583600;
+  --admin-action-bg: var(--green);
+  --admin-action-fg: var(--admin-bg);
+  --admin-avatar-fg: var(--admin-bg);
+
   --shadow-card: 0 10px 30px rgba(30, 42, 74, 0.07), 0 2px 6px rgba(30, 42, 74, 0.04);
 
   --radius-pill: 999px;

@@ -31,6 +31,24 @@ Lumina keeps the mascot-led, single-saturated-green brand voice inherited from i
 | Rose Accent | `#f472b6` | `--pink` | Decorative avatar/subject accent only — never chrome |
 | Teal Accent | `#14b8a6` | `--teal` | Decorative avatar/subject accent only — never chrome |
 
+### Admin-only tokens
+
+| Name | Value | Token | Role |
+|------|-------|-------|------|
+| Admin Canvas | `#0f1730` | `--admin-bg` | Page background and dark foreground used on bright admin actions/avatars |
+| Admin Topbar | `#161f3d` | `--admin-topbar-bg` | Administrator utility bar |
+| Admin Card | `#1b2547` | `--admin-card-bg` | Verification cards |
+| Admin Border | `#2a3560` | `--admin-border` | Card and section borders |
+| Admin Control Border | `#3a4570` | `--admin-control-border` | Outline controls and identity chip |
+| Admin Text | `#ffffff` | `--admin-text` | Primary text on dark admin surfaces |
+| Admin Muted | `#a8b4d2` | `--admin-muted` | Body copy on admin cards (7.22:1) |
+| Admin Subtle | `#91a2ca` | `--admin-subtle` | Labels and footer copy on admin cards (5.87:1) |
+| Admin Copy | `#c8d2ea` | `--admin-copy` | Quoted/profile copy on admin cards (9.89:1) |
+| Admin Accent | `#9bb1e8` | `--admin-accent` | Domain chip and informational emphasis |
+| Admin Danger | `#ff8585` | `--admin-danger` | Destructive outline text on admin cards (6.38:1) |
+| Admin Pending | `#583600` on `#fef2de` | `--admin-pending-fg` / `--admin-pending-bg` | Pending badges (9.77:1) |
+| Admin Action | `#0f1730` on `#58cc02` | `--admin-action-fg` / `--admin-action-bg` | Admin-only primary buttons (8.48:1); the app-wide primary button is unchanged |
+
 Each accent (yellow/purple/red/pink/teal) ships with a matching `-light` background tint (e.g. `--yellow-light`, `--purple-light`) at roughly 90% white for badge and icon-square fills — see the Quick Start block for exact values.
 
 ## Tokens — Typography
@@ -286,7 +304,24 @@ Example Component Prompts:
   /* Admin-only dark surface */
   --admin-bg: #0f1730;
   --admin-topbar-bg: #161f3d;
+  --admin-card-bg: #1b2547;
   --admin-border: #2a3560;
+  --admin-control-border: #3a4570;
+  --admin-text: #ffffff;
+  --admin-muted: #a8b4d2;
+  --admin-subtle: #91a2ca;
+  --admin-copy: #c8d2ea;
+  --admin-accent: #9bb1e8;
+  --admin-accent-bg: rgba(155, 177, 232, 0.12);
+  --admin-hover-bg: rgba(255, 255, 255, 0.05);
+  --admin-danger: #ff8585;
+  --admin-danger-bg: var(--red-light);
+  --admin-danger-fg: #8f1616;
+  --admin-pending-bg: var(--yellow-light);
+  --admin-pending-fg: #583600;
+  --admin-action-bg: var(--green);
+  --admin-action-fg: var(--admin-bg);
+  --admin-avatar-fg: var(--admin-bg);
 }
 ```
 

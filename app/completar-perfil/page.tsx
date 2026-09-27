@@ -20,6 +20,10 @@ export default async function CompletarPerfilPage() {
 
   const { user } = session;
 
+  if (user.role === "admin") {
+    redirect("/admin");
+  }
+
   return (
     <>
       <header className="flex items-center justify-between border-b border-[var(--border)] bg-card px-6 py-4 md:px-12">
