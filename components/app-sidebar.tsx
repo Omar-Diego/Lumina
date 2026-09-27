@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   CalendarCheck,
+  CalendarDays,
+  Clock,
   GraduationCap,
   User,
 } from "lucide-react";
@@ -22,18 +24,25 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-// ponytail: solo /tutores existe hoy. El resto queda visible (fiel al mockup)
-// pero deshabilitado hasta que esas pantallas se construyan — así el side
-// panel nunca enlaza a una ruta que todavía no existe.
-const NAV_ITEMS = [
+// ponytail: solo /tutores existe hoy del lado estudiante. El resto queda
+// visible (fiel al mockup) pero deshabilitado hasta que esas pantallas se
+// construyan — así el side panel nunca enlaza a una ruta que todavía no existe.
+const ESTUDIANTE_NAV_ITEMS = [
   { label: "Tutores", icon: GraduationCap, href: "/tutores" },
   { label: "Materias", icon: BookOpen, href: null },
   { label: "Mis sesiones", icon: CalendarCheck, href: null },
   { label: "Perfil", icon: User, href: null },
 ] as const;
 
-export function AppSidebar() {
+const TUTOR_NAV_ITEMS = [
+  { label: "Mi perfil", icon: User, href: "/mi-perfil" },
+  { label: "Mis franjas horarias", icon: CalendarDays, href: "/mis-franjas" },
+  { label: "Mis sesiones", icon: Clock, href: "/mis-sesiones" },
+] as const;
+
+export function AppSidebar({ role }: { role: "estudiante" | "tutor" }) {
   const pathname = usePathname();
+  const NAV_ITEMS = role === "tutor" ? TUTOR_NAV_ITEMS : ESTUDIANTE_NAV_ITEMS;
 
   return (
     <Sidebar>

@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     <SidebarProvider
       style={{ "--sidebar-width": "264px" } as CSSProperties}
     >
-      <AppSidebar />
+      <AppSidebar role={session.user.role} />
       <SidebarInset className="bg-[var(--page-bg)]">
         <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-6 py-8 md:px-11">
           <AppTopbar user={session.user} />
