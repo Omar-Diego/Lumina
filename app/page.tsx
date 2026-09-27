@@ -240,7 +240,7 @@ function MarketingHeader() {
           <LogIn className="size-4" />
           Iniciar sesión
         </Button>
-        <Button render={<Link href="/registro" />}>Encontrar tutor</Button>
+        <Button render={<Link href="/login" />}>Encontrar tutor</Button>
       </div>
     </header>
   );
@@ -278,7 +278,7 @@ function Hero() {
                 options={SCHEDULE_OPTIONS}
               />
               <Button
-                render={<Link href="/registro" />}
+                render={<Link href="/login" />}
                 className="min-w-[180px] flex-1 justify-center"
               >
                 <Search className="size-4" />
@@ -381,7 +381,7 @@ function TutoresDestacados() {
           </p>
         </div>
         <Link
-          href="/registro"
+          href="/login"
           className="text-[13px] font-bold text-[var(--blue-dark)]"
         >
           Ver todos los tutores
@@ -463,7 +463,7 @@ function TutorCard({ tutor }: { tutor: (typeof TUTORS)[number] }) {
           </div>
 
           <Button
-            render={<Link href="/registro" />}
+            render={<Link href="/login" />}
             className="w-full justify-center rounded-[var(--radius-md)] px-4 py-3"
           >
             Ver perfil
@@ -530,7 +530,7 @@ function MateriasTeaser() {
           </p>
         </div>
         <Link
-          href="/registro"
+          href="/login"
           className="text-[13px] font-bold text-[var(--blue-dark)]"
         >
           Ver todas las materias
@@ -541,7 +541,7 @@ function MateriasTeaser() {
         {SUBJECTS.map(({ icon: Icon, label, bg, fg }) => (
           <Link
             key={label}
-            href="/registro"
+            href="/login"
             className="flex min-w-[150px] flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--border)] bg-card px-4 py-3.5"
           >
             <span
