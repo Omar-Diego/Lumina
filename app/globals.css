@@ -80,6 +80,10 @@
   --teal: #14b8a6;
   --teal-light: #e1f7f3;
 
+  --admin-bg: #0f1730;
+  --admin-topbar-bg: #161f3d;
+  --admin-border: #2a3560;
+
   --shadow-card: 0 10px 30px rgba(30, 42, 74, 0.07), 0 2px 6px rgba(30, 42, 74, 0.04);
 
   --radius-pill: 999px;
