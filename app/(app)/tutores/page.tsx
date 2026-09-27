@@ -6,7 +6,12 @@ import { es } from "date-fns/locale";
 import { Heart, Star } from "lucide-react";
 
 import { auth } from "@/lib/auth";
-import { getMateriasDisponibles, getTutores, type TutorListado } from "@/lib/tutores";
+import {
+  getMateriasDisponibles,
+  getTutores,
+  TUTORES_PAGE_SIZE,
+  type TutorListado,
+} from "@/lib/tutores";
 import { cn, getAvatarColor, getInitials } from "@/lib/utils";
 import {
   TutorEmptyState,
@@ -14,6 +19,7 @@ import {
   TutorSearchBar,
   TutorSort,
 } from "@/components/tutor-filters";
+import { TutorPagination } from "@/components/tutor-pagination";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +32,7 @@ export const metadata = {
 export default async function TutoresPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; materia?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; materia?: string; sort?: string; page?: string }>;
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
 
@@ -42,11 +48,23 @@ export default async function TutoresPage({
 
   const params = await searchParams;
   const sort = params.sort === "recientes" ? "recientes" : "nombre";
+  const page = Math.max(1, Number(params.page) || 1);
 
-  const [tutores, materias] = await Promise.all([
-    getTutores({ q: params.q, materia: params.materia, sort }),
+  const [{ tutores, total }, materias] = await Promise.all([
+    getTutores({ q: params.q, materia: params.materia, sort, page }),
     getMateriasDisponibles(),
   ]);
+  const totalPages = Math.max(1, Math.ceil(total / TUTORES_PAGE_SIZE));
+
+  const buildHref = (targetPage: number) => {
+    const qs = new URLSearchParams();
+    if (params.q) qs.set("q", params.q);
+    if (params.materia) qs.set("materia", params.materia);
+    if (params.sort) qs.set("sort", params.sort);
+    if (targetPage > 1) qs.set("page", String(targetPage));
+    const query = qs.toString();
+    return query ? `/tutores?${query}` : "/tutores";
+  };
 
   return (
     <>
@@ -62,7 +80,7 @@ export default async function TutoresPage({
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <span className="text-[15px] font-extrabold text-[var(--ink)]">
-          {tutores.length} {tutores.length === 1 ? "tutor encontrado" : "tutores encontrados"}
+          {total} {total === 1 ? "tutor encontrado" : "tutores encontrados"}
         </span>
         <TutorSort />
       </div>
@@ -73,11 +91,14 @@ export default async function TutoresPage({
           otrasMaterias={materias.filter((m) => m !== params.materia).slice(0, 3)}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
-          {tutores.map((tutor) => (
-            <TutorCard key={tutor.id} tutor={tutor} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+            {tutores.map((tutor) => (
+              <TutorCard key={tutor.id} tutor={tutor} />
+            ))}
+          </div>
+          <TutorPagination page={page} totalPages={totalPages} buildHref={buildHref} />
+        </>
       )}
     </>
   );
@@ -171,6 +192,7 @@ function TutorCard({ tutor }: { tutor: TutorListado }) {
 
           <Button
             render={<Link href={`/tutores/${tutor.id}`} />}
+            nativeButton={false}
             className="mt-3 w-full justify-center rounded-[var(--radius-md)] px-4 py-3"
           >
             Ver perfil

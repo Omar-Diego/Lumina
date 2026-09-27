@@ -10,11 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
+// ponytail: con muchas materias, mostrar todo de entrada era el mismo scroll
+// infinito que en /tutores — top N (ya vienen ordenadas por tutorCount desc)
+// y un botón explícito para ver el resto.
+const TOP_N = 9;
+
 export function MateriasGrid({ materias }: { materias: MateriaResumen[] }) {
   const [q, setQ] = useState("");
+  const [verTodas, setVerTodas] = useState(false);
   const filtradas = materias.filter((m) =>
     m.materia.toLowerCase().includes(q.trim().toLowerCase()),
   );
+  const buscando = q.trim().length > 0;
+  const visibles = buscando || verTodas ? filtradas : filtradas.slice(0, TOP_N);
+  const hayMas = !buscando && !verTodas && filtradas.length > TOP_N;
 
   return (
     <>
@@ -31,8 +40,9 @@ export function MateriasGrid({ materias }: { materias: MateriaResumen[] }) {
       </div>
 
       <p className="mb-4 text-[15px] font-extrabold text-[var(--ink)]">
-        {filtradas.length}{" "}
-        {filtradas.length === 1 ? "materia disponible" : "materias disponibles"}
+        {hayMas
+          ? `Top ${TOP_N} de ${filtradas.length} materias`
+          : `${filtradas.length} ${filtradas.length === 1 ? "materia disponible" : "materias disponibles"}`}
       </p>
 
       {filtradas.length === 0 ? (
@@ -40,11 +50,23 @@ export function MateriasGrid({ materias }: { materias: MateriaResumen[] }) {
           No encontramos materias que coincidan con &quot;{q}&quot;.
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtradas.map((materia) => (
-            <MateriaCard key={materia.materia} materia={materia} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {visibles.map((materia) => (
+              <MateriaCard key={materia.materia} materia={materia} />
+            ))}
+          </div>
+
+          {hayMas && (
+            <button
+              type="button"
+              onClick={() => setVerTodas(true)}
+              className="mx-auto mt-5 block text-[13.5px] font-bold text-[var(--blue)]"
+            >
+              Ver las {filtradas.length} materias
+            </button>
+          )}
+        </>
       )}
     </>
   );
@@ -67,6 +89,7 @@ function MateriaCard({ materia }: { materia: MateriaResumen }) {
         </p>
         <Button
           render={<Link href={`/tutores?materia=${encodeURIComponent(materia.materia)}`} />}
+          nativeButton={false}
           className="mt-auto w-full justify-center rounded-[var(--radius-md)] py-3"
         >
           Ver tutores

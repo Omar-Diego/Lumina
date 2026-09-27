@@ -25,6 +25,8 @@ export type Franja = { id: string; inicio: string; fin: string };
 
 export type TutorSort = "nombre" | "recientes";
 
+export const TUTORES_PAGE_SIZE = 20;
+
 export async function getMateriasDisponibles(): Promise<string[]> {
   const { rows } = await pool.query<{ materia: string }>(
     `select distinct jsonb_array_elements_text(subjects) as materia
@@ -58,8 +60,9 @@ export async function getTutores(params: {
   q?: string;
   materia?: string;
   sort?: TutorSort;
-}): Promise<TutorListado[]> {
-  const { q, materia, sort = "nombre" } = params;
+  page?: number;
+}): Promise<{ tutores: TutorListado[]; total: number }> {
+  const { q, materia, sort = "nombre", page = 1 } = params;
   const conditions = ["u.role = 'tutor'"];
   const values: unknown[] = [];
 
@@ -78,6 +81,9 @@ export async function getTutores(params: {
   // coincidencia".
   const orderBy = sort === "recientes" ? `u."createdAt" desc` : `u.name asc`;
 
+  const offset = (Math.max(1, page) - 1) * TUTORES_PAGE_SIZE;
+  values.push(TUTORES_PAGE_SIZE, offset);
+
   const { rows } = await pool.query(
     `select
        u.id,
@@ -87,7 +93,8 @@ export async function getTutores(params: {
        u.bio,
        coalesce(f.proximas_franjas, '[]'::json) as "proximasFranjas",
        rt.promedio as "ratingPromedio",
-       coalesce(rt.total, 0) as "ratingCount"
+       coalesce(rt.total, 0) as "ratingCount",
+       count(*) over() as "totalCount"
      from better_auth."user" u
      left join lateral (
        select json_agg(
@@ -110,17 +117,21 @@ export async function getTutores(params: {
        where fh2.tutor_id = u.id
      ) rt on true
      where ${conditions.join(" and ")}
-     order by ${orderBy}`,
+     order by ${orderBy}
+     limit $${values.length - 1} offset $${values.length}`,
     values,
   );
 
   // pg devuelve numeric/bigint como string; los convertimos acá para que el
   // resto de la app trabaje con TutorListado tal como lo declara el tipo.
-  return rows.map((r) => ({
-    ...r,
-    ratingPromedio: r.ratingPromedio === null ? null : Number(r.ratingPromedio),
-    ratingCount: Number(r.ratingCount),
-  }));
+  return {
+    tutores: rows.map((r) => ({
+      ...r,
+      ratingPromedio: r.ratingPromedio === null ? null : Number(r.ratingPromedio),
+      ratingCount: Number(r.ratingCount),
+    })),
+    total: rows.length > 0 ? Number(rows[0].totalCount) : 0,
+  };
 }
 
 export async function getTutorPerfil(id: string): Promise<TutorPerfil | null> {

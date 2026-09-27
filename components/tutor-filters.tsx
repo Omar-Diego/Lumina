@@ -24,6 +24,9 @@ function useFilterParam() {
     const params = new URLSearchParams(searchParams.toString());
     if (value) params.set(key, value);
     else params.delete(key);
+    // Cambiar un filtro invalida la página actual (podría quedar fuera de
+    // rango para el nuevo resultado), así que siempre volvemos a la 1.
+    if (key !== "page") params.delete("page");
     const query = params.toString();
     router.push(query ? `${pathname}?${query}` : pathname);
   }
