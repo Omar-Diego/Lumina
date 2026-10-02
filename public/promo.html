@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lumina — Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* Tokens copiados de app/globals.css */
+:root{
+  --ink:#1e2a4a;--gray-600:#54607a;--gray-500:#6b7a99;--gray-400:#9aa8c2;--border:#e7ecf3;--bg:#eff5fc;--field:#f8fafd;
+  --green:#58cc02;--green-dark:#46a300;--green-light:#d9f7b3;
+  --blue:#2f6fee;--blue-dark:#1e56c9;--blue-light:#eaf1ff;--blue-lighter:#f5f9ff;
+  --yellow:#f2a93b;--yellow-light:#fef2de;--yellow-text:#b4780c;
+  --purple:#8b5cf6;--purple-light:#f1ebfe;--red:#ef4444;--red-light:#fde8e8;
+  --pink:#f472b6;--pink-light:#feecf5;--teal:#14b8a6;--teal-light:#e1f7f3;
+  --shadow-card:0 10px 30px rgba(30,42,74,.07),0 2px 6px rgba(30,42,74,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);font:600 16px/1.5 Nunito,system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.star-f{fill:var(--yellow);color:var(--yellow)}
+.s16{font-size:16px}
+.row{display:flex;align-items:center}
+
+/* viewport + camera */
+#viewport{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:var(--bg)}
+#stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;will-change:transform}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:10}
+#fade{position:absolute;inset:0;background:var(--bg);opacity:1;z-index:5;pointer-events:none}
+
+/* device frame */
+.device{position:absolute;left:120px;top:40px;width:1360px;height:820px;background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 30px 60px rgba(30,42,74,.10),0 8px 24px rgba(30,42,74,.08);transform-origin:50% 50%}
+.chrome{height:46px;display:flex;align-items:center;padding:0 18px;background:#fff;border-bottom:1px solid var(--border);position:relative}
+.dots i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:7px}
+.url{position:absolute;left:50%;top:8px;transform:translateX(-50%);width:520px;height:30px;border-radius:999px;background:var(--bg);display:flex;align-items:center;justify-content:center;gap:4px;font:700 13.5px Nunito;color:var(--gray-400)}
+.url svg{margin-right:4px;color:var(--gray-500)}.url span{color:var(--ink)}.url em{font-style:normal}
+.loadbar{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--blue)}
+.app{position:absolute;top:46px;left:0;right:0;bottom:0;background:var(--bg);overflow:hidden}
+
+/* sidebar (components/app-sidebar.tsx) */
+.sidebar{position:absolute;left:0;top:0;bottom:0;width:264px;background:#fff;border-right:1px solid var(--border)}
+.sb-head{padding:24px 16px}.sb-head img{height:36px;display:block}
+.sb-nav{padding:8px 16px;display:flex;flex-direction:column;gap:4px}
+.sb-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;font:700 15px/1.25 Nunito;color:var(--gray-600);transition:background .15s,color .15s}
+.sb-item svg{font-size:20px}
+.sb-item.is-hover{background:var(--blue-lighter)}
+.sb-item.active{background:var(--green-light);color:var(--green-dark)}
+
+/* scenes */
+.scene{position:absolute;left:264px;top:0;right:0;bottom:0;overflow:hidden;opacity:0;visibility:hidden}
+.scene.full{left:0;background:var(--bg);z-index:2}
+.scroll{position:relative;padding:32px 44px}
+.topbar{display:flex;justify-content:flex-end;margin-bottom:28px}
+.tb-trig{position:relative;display:flex;align-items:center;gap:10px}
+.tb-trig b{display:block;font:800 14px/1.25 Nunito}.tb-trig small{display:block;font:600 12px/1.25 Nunito;color:var(--gray-500)}
+.tb-trig>svg{font-size:16px;color:var(--gray-400)}
+.menu{left:auto;right:0;min-width:160px}
+.menu .opt{justify-content:flex-start;gap:8px}.menu .opt svg{visibility:visible;font-size:16px}
+.h1{font:900 34px/1.2 Nunito;letter-spacing:-.01em}
+.sub{margin-top:6px;font:600 16px/1.5 Nunito;color:var(--gray-500)}
+.h2{font:800 18px/1.4 Nunito;margin-bottom:16px}
+
+/* shared components (components/ui/*) */
+.card{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-card);padding:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:800 14.5px/1.5 Nunito;border-radius:999px;padding:12px 24px;border:1px solid transparent;white-space:nowrap;transition:background-color .15s,transform .12s,opacity .2s}
+.btn svg{font-size:16px}
+.btn-primary{background:var(--green);color:#fff}.btn-primary.is-hover{background:var(--green-dark)}
+.btn-outline{background:#fff;border-color:var(--border);color:var(--ink)}.btn-outline.is-hover{background:var(--blue-lighter)}
+.btn-block{display:flex;width:100%;border-radius:14px;padding:12px 16px}
+.btn-block.tall{padding:14px 16px}
+.btn-sm{padding:10px 16px;font-size:13px;gap:6px}
+.btn.disabled{opacity:.5}
+.is-press{transform:scale(.95)!important}
+.badge{display:inline-flex;align-items:center;background:var(--blue-light);color:var(--blue-dark);border-radius:999px;padding:4px 12px;font:700 12.5px/1.5 Nunito;white-space:nowrap}
+.status{flex:none;border-radius:999px;padding:4px 12px;font:800 12px/1.5 Nunito;background:var(--green-light);color:var(--green-dark)}
+.status.done{background:var(--border);color:var(--gray-600)}
+.av{width:var(--s);height:var(--s);border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:800;flex:none}
+.rating{display:flex;width:fit-content;align-items:center;gap:6px;font:700 13px/1.5 Nunito;color:var(--gray-500)}
+.rating b{font-weight:800;color:var(--ink)}
+.muted{font:700 13px/1.5 Nunito;color:var(--gray-500)}
+.lbl{font:800 13.5px/1.4 Nunito}
+.fcol{display:flex;flex-direction:column;gap:8px}
+.field{position:relative;border:1.5px solid var(--border);border-radius:14px;background:var(--field);padding:14px 16px;font:700 14.5px/1.5 Nunito;color:var(--ink);min-height:53px;transition:border-color .15s,box-shadow .15s}
+.field .ph{font-weight:600;color:var(--gray-400)}
+.focus{border-color:var(--blue)!important;box-shadow:0 0 0 3px rgba(47,111,238,.2)}
+.caret{display:inline-block;width:2px;height:1.1em;background:var(--ink);vertical-align:-3px;margin-left:1px;animation:blink 1s steps(1) infinite}
+.search{position:relative}
+.search>svg{position:absolute;left:20px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--gray-400)}
+.search .in{border:1.5px solid var(--border);border-radius:20px;background:#fff;padding:16px 20px 16px 52px;font:700 15px/1.5 Nunito;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+.search .ph{font-weight:600;color:var(--gray-400)}
+.trigger{position:relative;display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:999px;background:#fff;padding:10px 16px;font:700 13.5px/1.5 Nunito;color:var(--gray-600);transition:border-color .15s}
+.trigger>svg{color:var(--gray-400);font-size:16px}
+.trigger.is-hover{border-color:var(--blue)}
+.pop{position:absolute;top:calc(100% + 6px);left:0;min-width:100%;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px rgba(30,42,74,.14);padding:4px;opacity:0;transform:translateY(-4px) scale(.98);transform-origin:top left;transition:opacity .15s,transform .2s;z-index:5}
+.pop.open{opacity:1;transform:none}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:7px 10px;border-radius:8px;font:600 14px/1.4 Nunito;color:var(--ink);white-space:nowrap}
+.opt.is-hover{background:var(--blue-lighter)}
+.opt svg{font-size:14px;visibility:hidden}.opt.sel svg{visibility:visible}
+.fpill{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:999px;background:#fff;padding:10px 16px;font:700 13.5px/1.4 Nunito;color:var(--gray-600);transition:background .15s,border-color .15s,color .15s}
+.fpill.is-hover,.fpill.act{border-color:var(--blue);background:var(--blue-light);color:var(--blue-dark)}
+.day-lbl{margin-bottom:10px;font:700 13px/1.4 Nunito;letter-spacing:.025em;text-transform:uppercase;color:var(--gray-500)}
+.days{display:flex;flex-wrap:wrap;gap:32px}
+.days .pills{display:flex;flex-wrap:wrap;gap:8px}
+.datechip{width:48px;flex:none;display:flex;flex-direction:column;align-items:center;border-radius:14px;background:var(--blue-lighter);padding:6px 0}
+.datechip b{font:900 16px/1 Nunito}.datechip small{font:700 10px/1.5 Nunito;letter-spacing:.025em;text-transform:uppercase;color:var(--gray-500)}
+.datechip.lg{width:56px;padding:8px 0}.datechip.lg b{font-size:18px}.datechip.lg small{font-size:11px}
+
+/* calendar (components/ui/calendar.tsx) */
+.cal{padding:8px}
+.cal-cap{position:relative;height:28px;display:flex;align-items:center;justify-content:space-between;font:500 14px Nunito;margin-bottom:16px}
+.cal-cap svg{font-size:16px;width:28px;color:var(--ink)}
+.cal-wd{display:flex}.cal-wd span{flex:1;text-align:center;font:400 12.8px/1.5 Nunito;color:var(--gray-500)}
+.cal-wk{display:flex;margin-top:8px}
+.cal-d{position:relative;display:grid;place-items:center;width:28px;height:28px;border-radius:14px;font:400 14px Nunito;color:var(--ink);transition:background .15s}
+.cal.big .cal-d{flex:1;width:auto;height:auto;aspect-ratio:1}
+.cal-d.out,.cal-d.dis{color:var(--gray-500);opacity:.5}
+.cal-d.today{background:var(--blue-lighter)}
+.cal-d.is-hover{background:var(--blue-lighter)}
+.cal-d.sel{background:var(--green);color:#fff}
+.cal-d.conf,.cal-d.comp{font-weight:800}
+.cal-d.conf{background:var(--blue-light);color:var(--blue-dark)}
+.cal-d.comp{background:var(--green-light);color:var(--green-dark)}
+.cal-d.conf::after,.cal-d.comp::after{content:'';position:absolute;bottom:4px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--blue)}
+.cal-d.comp::after{background:var(--green)}
+
+/* landing (app/page.tsx) + login (app/login/page.tsx) */
+.mk-head{display:flex;align-items:center;justify-content:space-between;gap:24px;background:#fff;border-bottom:1px solid var(--border);padding:16px 48px}
+.mk-head img{height:36px;display:block}
+.mk-nav{display:flex;gap:4px}
+.mk-nav span{border-radius:999px;padding:10px 16px;font:700 14.5px/1.5 Nunito;color:var(--gray-600)}
+.mk-nav .on{background:var(--green-light);color:var(--green-dark)}
+.hero{display:flex;align-items:center;gap:40px;padding:40px 48px 64px}
+.hero h1{font:900 44px/1.15 Nunito;letter-spacing:-.02em}
+.hero .lead{margin-top:16px;font:600 16px/1.5 Nunito;color:var(--gray-500)}
+.hero .card{margin-top:28px;display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+.sfield{display:flex;align-items:center;gap:12px;min-width:180px;border:1.5px solid var(--border);border-radius:999px;background:#fff;padding:14px 20px}
+.sfield>svg{font-size:20px;color:var(--gray-400)}
+.sfield .t{flex:1;display:flex;flex-direction:column;gap:2px;line-height:1}
+.sfield .t small{font:700 11px/1 Nunito;letter-spacing:.025em;color:var(--gray-400)}
+.sfield .t span{font:600 14px/1 Nunito;color:var(--gray-400)}
+.sfield .chev{font-size:16px;color:var(--gray-400)}
+.feats{margin-top:32px;display:flex;flex-wrap:wrap;gap:28px;list-style:none}
+.feats li{width:96px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font:700 13px/1.4 Nunito;color:var(--gray-500)}
+.feats i{width:56px;height:56px;border-radius:14px;display:grid;place-items:center}
+.feats i svg{font-size:24px}
+.hero-art{position:relative;flex:none;width:300px;height:300px;display:flex;align-items:center;justify-content:center}
+.hero-art .c{position:absolute;border-radius:50%}
+.hero-art img{position:relative;z-index:1;width:100%;transform-origin:50% 100%}
+.dest{padding:0 48px 64px}
+.dest-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px}
+.dest-head h2{font:800 22px/1.4 Nunito}.dest-head p{margin-top:4px;font:600 14.5px/1.5 Nunito;color:var(--gray-500)}
+.dest-head a{font:700 13px Nunito;color:var(--blue-dark)}
+.dest-cards{display:flex;gap:20px}
+.dest-cards .card{flex:1;display:flex;flex-direction:column;gap:16px}
+.login{width:480px;margin:0 auto;padding:96px 0;display:flex;flex-direction:column;align-items:center}
+.or{display:flex;align-items:center;gap:10px;font:700 13px Nunito;color:var(--gray-500)}
+.or i{height:1px;flex:1;background:var(--border)}
+
+/* tutores (app/(app)/tutores/page.tsx) */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.tcard{display:flex;gap:16px}
+.tcard .body{flex:1;min-width:0;display:flex;flex-direction:column}
+.tcard h3{font:800 18px/1.4 Nunito;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tcard .bio{margin-bottom:10px;font:600 13.5px/1.625 Nunito;color:var(--gray-500);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tcard .fr{margin-top:auto;display:flex;flex-wrap:wrap;gap:6px}
+.tcard .fr span{border:1.5px solid var(--border);border-radius:999px;padding:6px 12px;font:700 12px/1.3 Nunito;color:var(--gray-600)}
+
+/* agenda (app/(app)/mis-sesiones/page.tsx) */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.stat{border:1px solid var(--border);border-radius:14px;background:#fff;padding:16px}
+.stat p{font:700 13px/1.5 Nunito;color:var(--gray-500)}.stat b{display:block;margin-top:4px;font:800 15px/1.5 Nunito}
+.cols{display:flex;gap:20px;align-items:flex-start}
+.cols>div{display:flex;flex-direction:column;gap:20px}
+.h3{font:800 18px/1.4 Nunito;margin-bottom:14px}
+.legend{margin-top:12px;display:flex;gap:16px;border-top:1px solid var(--border);padding-top:16px}
+.legend span{display:flex;align-items:center;gap:6px;font:700 12.5px/1.5 Nunito;color:var(--gray-500)}
+.legend i{width:8px;height:8px;border-radius:50%}
+.srow{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);padding:12px 0}
+.srow:last-child{border-bottom:0;padding-bottom:0}
+.srow .who{flex:1;min-width:0}
+.srow .who b{display:block;font:800 14px/1.4 Nunito}.srow .who small{font:700 12.5px/1.5 Nunito;color:var(--gray-500)}
+.rec b{display:block;font:800 13.5px/1.5 Nunito}.rec p{font:600 13px/1.5 Nunito;color:var(--gray-500)}
+.tsrow{display:flex;align-items:center;gap:16px}
+.tsrow .who{flex:1}.tsrow .who b{display:block;font:800 16px/1.4 Nunito}.tsrow .who small{font:700 13px/1.5 Nunito;color:var(--gray-500)}
+
+/* calificar (components/calificar-form.tsx) */
+.stars{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
+.star{padding:2px;font-size:32px;color:var(--border);transition:color .15s}
+.star.on{color:var(--yellow)}.star.on svg{fill:var(--yellow)}
+
+/* mis franjas (components/franja-form.tsx) */
+.fform{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+.fgroup{position:relative;display:flex;flex-direction:column;gap:8px}
+.fgroup>label{font:800 13px/1.4 Nunito}
+.ftrig{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:14px;background:var(--field);padding:14px 16px;font:700 14.5px/1.5 Nunito;transition:border-color .15s}
+.ftrig.is-hover{border-color:var(--blue)}
+.ftrig>svg{font-size:16px;color:var(--gray-400)}
+.ftrig .v{flex:1}.ftrig .v.ph{font-weight:600;color:var(--gray-400)}
+.fpill .res{color:var(--blue)}
+.pop-in{animation:popin .5s cubic-bezier(.3,1.6,.5,1)}
+
+/* materias (components/materias-grid.tsx) */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mcard{display:flex;flex-direction:column}
+.mcard i{width:56px;height:56px;margin-bottom:14px;border-radius:14px;display:grid;place-items:center}
+.mcard i svg{font-size:24px}
+.mcard h3{font:800 18px/1.4 Nunito}.mcard p{margin:6px 0 16px;font:700 13.5px/1.5 Nunito;color:var(--gray-500)}
+
+/* chapter cards (full-screen green) */
+.chapter{position:absolute;inset:0;z-index:6;background:var(--green);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;opacity:0;visibility:hidden;overflow:hidden}
+.ch-dot{position:absolute;border-radius:50%;background:rgba(255,255,255,.13)}
+.ch-logo{position:relative;background:#fff;border-radius:999px;padding:10px 26px;box-shadow:0 12px 30px rgba(30,42,74,.14)}
+.ch-logo img{height:40px;display:block}
+.ch-m{position:relative;width:210px;height:210px;margin:40px 0 30px;border-radius:50%;background:#fff;box-shadow:0 18px 40px rgba(30,42,74,.16)}
+.ch-m img{position:absolute;left:50%;bottom:14px;height:232px;margin-left:-110px;transform-origin:50% 100%}
+.ch-chip{position:relative;font:800 15px/1 Nunito;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.ch-t{position:relative;margin-top:14px;font:900 104px/1.02 Nunito;letter-spacing:-.03em}
+.ch-t span{display:inline-block;margin:0 .12em}
+.ch-s{position:relative;margin-top:20px;font:700 26px/1.3 Nunito;color:rgba(255,255,255,.93)}
+
+/* mascot + host */
+.bob{animation:bob 2s ease-in-out infinite}
+.shadow{display:block;height:16px;border-radius:50%;background:rgba(30,42,74,.12);margin-top:4px;animation:shadow 2s ease-in-out infinite}
+#host{position:absolute;left:30px;bottom:24px;display:flex;align-items:flex-end;gap:14px;z-index:4;transform-origin:40px 100%}
+.host-ring{position:relative;width:76px;height:76px;border-radius:50%;background:#fff;border:1px solid var(--border);box-shadow:var(--shadow-card)}
+#host-img{position:absolute;left:50%;bottom:6px;height:84px;transform-origin:50% 100%}
+#host .shadow{width:48px;margin:6px auto 0}
+#host-say{padding:12px 18px;font:800 15px/1.35 Nunito;max-width:370px;margin-bottom:26px;border-radius:16px 16px 16px 4px}
+
+/* cierre */
+#closing{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;visibility:hidden;text-align:center}
+#closing .m{display:flex;flex-direction:column;align-items:center}
+#closing .m img{height:250px;transform-origin:50% 100%}#closing .shadow{width:130px}
+.c-logo{height:74px;margin-top:10px;mix-blend-mode:multiply} /* el PNG del logo trae fondo blanco */
+#closing h1{font:900 46px/1.15 Nunito;letter-spacing:-.02em}#closing p{font:600 19px Nunito;color:var(--gray-500)}
+#c-cta{margin-top:10px;padding:14px 32px;font-size:16px}
+
+#dev{position:fixed;left:12px;top:12px;z-index:20;display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px 12px;font:700 13px Nunito;box-shadow:var(--shadow-card)}
+#dev input{width:320px}
+#dev[hidden]{display:none}
+
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shadow{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.8);opacity:.55}}
+@keyframes blink{50%{opacity:0}}
+@keyframes popin{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<template id="tpl-device">
+  <div class="device">
+    <div class="chrome">
+      <span class="dots"><i style="background:var(--red)"></i><i style="background:var(--yellow)"></i><i style="background:var(--green)"></i></span>
+      <div class="url"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span>lumina.app</span><em id="url-path">/</em></div>
+      <i class="loadbar" id="loadbar"></i>
+    </div>
+    <div class="app" id="app">
+      <aside class="sidebar">
+        <div class="sb-head"><img src="logo-lumina.png" alt="Lumina"></div>
+        <nav class="sb-nav" id="nav-estudiante"></nav>
+        <nav class="sb-nav" id="nav-tutor"></nav>
+      </aside>
+    </div>
+  </div>
+</template>
+
+<div id="viewport">
+  <div id="stage"><div id="closing"></div></div>
+  <div id="host">
+    <div><div class="bob"><div class="host-ring"><img id="host-img" src="lumina-saluda.png" alt=""></div></div><i class="shadow"></i></div>
+    <div class="card" id="host-say"></div>
+  </div>
+  <div id="fade"></div>
+</div>
+<canvas id="fx"></canvas>
+<div id="dev" hidden><input type="range" min="0" step="10" id="dev-range"><span id="dev-t"></span></div>
+
+<script>
+// ---------- helpers ----------
+const W = 1600, H = 900, SCENE_H = 774;
+const $ = s => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eout = t => 1 - Math.pow(1 - t, 3);
+const prog = (lt, a, d) => clamp((lt - a) / d);
+const findLast = (arr, T) => { let i = arr.length - 1; while (i >= 0 && arr[i].T > T) i--; return i; };
+const rnd = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+
+const E = {};
+const $i = id => E[id] || (E[id] = document.getElementById(id));
+const tg = (id, c, v) => $i(id).classList.toggle(c, !!v);
+const text = (id, s) => { const e = $i(id); if (e.textContent !== s) e.textContent = s; };
+const show = (id, v) => { $i(id).style.display = v ? '' : 'none'; };
+const rv = (el, u, dy = 16) => { el = typeof el === 'string' ? $i(el) : el; el.style.opacity = u; el.style.transform = u >= 1 ? '' : `translateY(${(1 - u) * dy}px)`; };
+const popScale = u => u < .6 ? lerp(.6, 1.08, eout(u / .6)) : lerp(1.08, 1, eio((u - .6) / .4));
+// mascot entrance: scale 0.6 -> 1.08 -> 1, rising from below
+const pop = (el, u) => {
+  el = typeof el === 'string' ? $i(el) : el;
+  el.style.opacity = clamp(u * 4);
+  el.style.transform = u >= 1 ? '' : `translateY(${(1 - eout(u)) * 40}px) scale(${popScale(u)})`;
+};
+const typed = (s, lt, a, d) => s.slice(0, Math.round(s.length * prog(lt, a, d)));
+// a typed text field: placeholder until focused, caret while focused
+function typeField(prefix, value, lt, focusAt, blurAt) {
+  const focus = lt >= focusAt && lt < blurAt;
+  tg(prefix, 'focus', focus);
+  show(prefix + '-caret', focus);
+  show(prefix + '-ph', lt < focusAt);
+  text(prefix + '-q', value);
+}
+const fieldHTML = (id, ph, extra = '') => `<div class="field" id="${id}"${extra}><span id="${id}-q"></span><i class="caret" id="${id}-caret"></i><span class="ph" id="${id}-ph">${ph}</span></div>`;
+
+// same helpers as lib/utils.ts
+const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
+const initials = n => { const p = n.trim().split(/\s+/); return ((p[0]?.[0] ?? '') + (p[1]?.[0] ?? '')).toUpperCase(); };
+const AVATAR = ['--pink', '--blue', '--teal', '--purple', '--yellow'];
+const MATERIA = [['--blue-light', '--blue-dark'], ['--purple-light', '--purple'], ['--pink-light', '--pink'], ['--teal-light', '--teal'], ['--yellow-light', '--yellow-text'], ['--green-light', '--green']];
+const av = (name, s, fs, color) => `<span class="av" style="--s:${s}px;font-size:${fs}px;background:var(${color || AVATAR[hash(name) % 5]})">${initials(name)}</span>`;
+
+// lucide icons (same set the app imports)
+const svg = (p, c = '') => `<svg viewBox="0 0 24 24"${c ? ` class="${c}"` : ''}>${p}</svg>`;
+const I = {
+  search: svg('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'),
+  chev: svg('<path d="m6 9 6 6 6-6"/>'),
+  chevL: svg('<path d="m15 18-6-6 6-6"/>'),
+  chevR: svg('<path d="m9 18 6-6-6-6"/>'),
+  check: svg('<path d="M20 6 9 17l-5-5"/>'),
+  starP: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  calDays: svg('<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>'),
+  calCheck: svg('<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>'),
+  clock: svg('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
+  user: svg('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+  cap: svg('<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>'),
+  book: svg('<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>'),
+  shield: svg('<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>'),
+  users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  login: svg('<path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>'),
+  logout: svg('<path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>'),
+  pin: svg('<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>', 's16'),
+  heart: svg('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.050 3 5.5l7 7Z"/>', 's16'),
+  arrowL: svg('<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>', 's16'),
+  sliders: svg('<path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/>', 's16'),
+  google: '<svg viewBox="0 0 24 24" style="stroke:none"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.920 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>',
+  github: '<svg viewBox="0 0 24 24" style="stroke:none;fill:#181717"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>',
+};
+I.star = svg(I.starP, 'star-f s16');
+I.starEmpty = svg(I.starP);
+const badge = s => `<span class="badge">${s}</span>`;
+const rating = (r, c) => `<span class="rating">${I.star}<b>${r}</b>(${c})</span>`;
+// components/app-topbar.tsx — with its "Cerrar sesión" dropdown when `id` is given
+const topbar = (name, role, id) => `<div class="topbar"><div class="tb-trig"${id ? ` id="${id}"` : ''}>${av(name, 40, 14, '--pink')}<span><b>${name}</b><small>${role}</small></span>${I.chev}
+  ${id ? `<div class="pop menu" id="${id}-menu"><div class="opt" id="${id}-out">${I.logout}Cerrar sesión</div></div>` : ''}</div></div>`;
+const datechip = (d, m, lg) => `<div class="datechip${lg ? ' lg' : ''}"><b>${d}</b><small>${m}</small></div>`;
+
+// month grid as react-day-picker renders it (es, lunes primero) — mayo 2026, hoy = lunes 11
+function calendar(prefix, { big = false, marks = {}, disableBefore = 0 } = {}) {
+  const cells = [27, 28, 29, 30].map(n => ({ n, out: true })).concat(Array.from({ length: 31 }, (_, i) => ({ n: i + 1 })));
+  const weeks = []; for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return `<div class="cal${big ? ' big' : ''}"><div class="cal-cap">${I.chevL}<span>mayo 2026</span>${I.chevR}</div>
+    <div class="cal-wd">${['lu', 'ma', 'mi', 'ju', 'vi', 'sá', 'do'].map(d => `<span>${d}</span>`).join('')}</div>
+    ${weeks.map(w => `<div class="cal-wk">${w.map(d => {
+      const c = d.out ? 'out' : [marks[d.n] || '', d.n === 11 ? 'today' : '', d.n < disableBefore ? 'dis' : ''].join(' ');
+      return `<span class="cal-d ${c}"${d.out ? '' : ` id="${prefix}-${d.n}"`}>${d.n}</span>`;
+    }).join('')}</div>`).join('')}</div>`;
+}
+
+// ---------- data ----------
+const TUTORES = [
+  ['Andrés Cárdenas', 'Facultad de Ingeniería', 'Estudiante de Ing. Electrónica. Explico con ejercicios paso a paso.', ['Cálculo', 'Física'], '4.6', 15, ['Hoy 17:00', 'Mañana 14:00']],
+  ['Camila Torres', 'Facultad de Economía', 'Me encanta traducir la estadística a ejemplos de la vida diaria.', ['Estadística', 'Cálculo'], '4.8', 24, ['Mañana 08:00', '13 may, 12:00']],
+  ['Carlos Mejía', 'Facultad de Ciencias', 'Monitor de Estadística y Probabilidad desde hace dos años.', ['Estadística', 'Probabilidad'], '4.7', 22, ['Hoy 16:00']],
+  ['Daniel Ortiz', 'Facultad de Ciencias', 'Matemático en formación, con paciencia infinita para las integrales.', ['Cálculo', 'Ecuaciones diferenciales'], '4.8', 27, ['14 may, 11:00', '15 may, 09:00']],
+  ['Julián Herrera', 'Facultad de Ingeniería', 'Programación en Python y Cálculo con enfoque práctico.', ['Programación', 'Cálculo'], '4.9', 41, ['Hoy 18:00', 'Mañana 10:00']],
+  ['Laura Gómez', 'Facultad de Química', 'Química general y laboratorio, sin memorizar de más.', ['Química'], '4.9', 35, ['14 may, 09:00']],
+  ['María Fernanda Rojas', 'Facultad de Ingeniería', 'Monitora de Cálculo desde 2023. Me enfoco en entender el porqué antes de memorizar fórmulas.', ['Cálculo', 'Álgebra lineal'], '4.9', 32, ['Mañana 09:00', 'Mañana 11:00', '13 may, 10:00']],
+  ['Sofía Martínez', 'Facultad de Ciencias', 'Física I y Cálculo con muchos dibujos y analogías.', ['Física', 'Cálculo'], '4.8', 29, ['13 may, 14:00']],
+];
+const MARIA = 6, MARIA_N = TUTORES[MARIA][0];
+const MATERIAS_OPC = ['Álgebra lineal', 'Cálculo', 'Ecuaciones diferenciales', 'Estadística', 'Física', 'Probabilidad', 'Programación', 'Química'];
+const FRANJAS_MARIA = [
+  ['Martes 12 de mayo', ['09:00 – 10:00', '11:00 – 12:00']],
+  ['Miércoles 13 de mayo', ['10:00 – 11:00', '15:00 – 16:00', '17:00 – 18:00']],
+  ['Jueves 14 de mayo', ['08:00 – 09:00', '14:00 – 15:00']],
+];
+const MATERIAS = [['Cálculo', 6], ['Estadística', 4], ['Física', 3], ['Programación', 3], ['Álgebra lineal', 2], ['Química', 2], ['Inglés', 2], ['Probabilidad', 1], ['Ecuaciones diferenciales', 1], ['Bases de datos', 1], ['Biología', 1], ['Circuitos', 1], ['Microeconomía', 1], ['Redacción académica', 1]];
+const HORAS = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30'];
+const EMAIL = 'andrea.lopez@uni.edu.co';
+const RESENA = 'Explicó intervalos de confianza con ejemplos reales. ¡Por fin lo entendí!';
+const ESCUELA = 'Facultad de Ingeniería';
+
+// ---------- global state written by scene updates ----------
+let curAlpha = 1;
+const host = $('#host'), hostImg = $('#host-img'), say = $('#host-say'), fade = $('#fade');
+let device;
+
+// full-screen green chapter card: "¿Eres …?" in white, logo + Lumina
+function chapter(id, chip, title, sub, pose) {
+  const words = title.split(' ');
+  const dots = [[-80, 90, 260], [1340, -60, 320], [1180, 620, 200], [80, 640, 180], [300, 300, 90], [1320, 380, 110]];
+  return {
+    id, chapter: true, dur: 3800,
+    html: `${dots.map(([x, y, s], i) => `<i class="ch-dot" id="${id}-d${i}" style="left:${x}px;top:${y}px;width:${s}px;height:${s}px"></i>`).join('')}
+      <div class="ch-logo" id="${id}-logo"><img src="logo-lumina.png" alt="Lumina"></div>
+      <div class="ch-m" id="${id}-m"><img id="${id}-img" src="lumina-${pose}.png" alt=""></div>
+      <div class="ch-chip" id="${id}-chip">${chip}</div>
+      <h1 class="ch-t">${words.map((w, i) => `<span id="${id}-w${i}">${w}</span>`).join('')}</h1>
+      <p class="ch-s" id="${id}-sub">${sub}</p>`,
+    script(h) { h.burst(900, `#${id}-m`, 34, 'sparkle'); },
+    update(lt) {
+      dots.forEach((_, i) => { $i(`${id}-d${i}`).style.transform = `translate(${Math.sin(lt / 900 + i) * 18}px,${Math.cos(lt / 1100 + i * 2) * 14 - lt * .012 * (i % 3)}px)`; });
+      rv(`${id}-logo`, eout(prog(lt, 300, 500)), 24);
+      const m = $i(`${id}-m`), u = prog(lt, 450, 700);
+      m.style.opacity = clamp(u * 4); m.style.transform = u >= 1 ? '' : `scale(${popScale(u)})`;
+      pop(`${id}-img`, prog(lt, 650, 700));
+      rv(`${id}-chip`, eout(prog(lt, 800, 450)), 14);
+      words.forEach((_, i) => rv(`${id}-w${i}`, eout(prog(lt, 950 + i * 130, 520)), 50));
+      rv(`${id}-sub`, eout(prog(lt, 1350 + words.length * 60, 550)), 20);
+    },
+  };
+}
+
+// ---------- scenes ----------
+// script(h): h.move(t, target) · h.click(t, target, zoom = 0 → sin zoom, camTarget?) · h.cam(t, target|null, zoom, dur) · h.pose(t, pose, caption) · h.burst(t, target, n, type)
+const SCENES = [
+{
+  id: 'inicio', url: '/', dur: 4600, full: true,
+  html: `<header class="mk-head"><img src="logo-lumina.png" alt="Lumina">
+      <nav class="mk-nav"><span class="on">Inicio</span><span>Tutores</span><span>Materias</span><span>Cómo funciona</span></nav>
+      <div class="row" style="gap:12px"><span class="btn btn-outline">${I.login} Iniciar sesión</span><span class="btn btn-primary">Encontrar tutor</span></div></header>
+    <section class="hero">
+      <div style="flex:1">
+        <h1 id="l-h1">Encuentra tutores verificados y agenda tu próxima sesión</h1>
+        <p class="lead" id="l-p">Compara tutores, explora materias, revisa horarios y reserva sesiones presenciales con total claridad.</p>
+        <div class="card" id="l-card">
+          <div class="sfield">${I.book}<span class="t"><small>Materia</small><span>Ej. Matemáticas</span></span>${svg('<path d="m6 9 6 6 6-6"/>', 'chev')}</div>
+          <div class="sfield">${I.calDays}<span class="t"><small>Fecha</small><span>Selecciona una fecha</span></span></div>
+          <div class="sfield">${I.clock}<span class="t"><small>Horario</small><span>Cualquier horario</span></span>${svg('<path d="m6 9 6 6 6-6"/>', 'chev')}</div>
+          <span class="btn btn-primary" id="l-login" style="min-width:180px;flex:1">${I.search} Buscar tutores</span>
+        </div>
+        <ul class="feats" id="l-feat">${[['shield', 'Tutores verificados', '--green-light', '--green'], ['book', 'Búsqueda por materia', '--blue-light', '--blue-dark'], ['calDays', 'Horarios disponibles', '--yellow-light', '--yellow-text'], ['calCheck', 'Reserva segura', '--red-light', '--red'], ['starEmpty', 'Reseñas de estudiantes', '--purple-light', '--purple'], ['users', 'Sesiones presenciales', '--teal-light', '--teal']]
+          .map(([ic, l, bg, fg], i) => `<li id="l-f${i}"><i style="background:var(${bg});color:var(${fg})">${I[ic]}</i>${l}</li>`).join('')}</ul>
+      </div>
+      <div class="hero-art">
+        <span class="c" style="top:-8px;left:-8px;width:256px;height:256px;background:var(--blue-light)"></span>
+        <span class="c" style="top:8px;right:0;width:64px;height:64px;background:var(--yellow-light)"></span>
+        <span class="c" style="bottom:0;left:8px;width:80px;height:80px;background:var(--pink-light)"></span>
+        <span class="c" style="right:-8px;bottom:16px;width:56px;height:56px;background:var(--green-light)"></span>
+        <img id="l-mascot" src="lumina-estudia.png" alt="">
+      </div>
+    </section>
+    <section class="dest" id="l-dest">
+      <div class="dest-head"><div><h2>Tutores destacados</h2><p>Conoce algunos de nuestros tutores verificados y agenda una sesión.</p></div><a>Ver todos los tutores</a></div>
+      <div class="dest-cards">${[['María Torres', '--pink', '4.9 (120)', 'Zona Centro, CDMX', ['Matemáticas', 'Física']], ['Diego Ramírez', '--blue', '4.8 (86)', 'San Pedro, Monterrey', ['Inglés', 'Conversación']], ['Ana López', '--teal', '5.0 (64)', 'Coyoacán, CDMX', ['Biología', 'Química']]]
+        .map(([n, c, r, loc, subj]) => `<div class="card">${av(n, 52, 16, c)}<div><span class="rating" style="font-size:15px;color:var(--ink);font-weight:800">${I.star}${r}</span>
+          <h3 style="margin-top:6px;font:800 18px/1.4 Nunito">${n}</h3><p class="muted row" style="gap:6px;margin-top:4px">${I.pin}${loc}</p></div>
+          <div class="tags">${subj.map(badge).join('')}</div></div>`).join('')}</div>
+    </section>`,
+  script(h) {
+    h.pose(0, 'saluda', '¡Hola! Soy Lumina. Te muestro cómo funciona.');
+    h.move(1500, '#l-login');
+    h.click(2700, '#l-login', 1.35);
+  },
+  update(lt) {
+    fade.style.opacity = 1 - eio(prog(lt, 0, 800));
+    curAlpha = prog(lt, 1400, 300);
+    const u = prog(lt, 400, 600);
+    host.style.opacity = clamp(u * 4);
+    host.style.transform = `translateY(${(1 - eout(u)) * 40}px) scale(${popScale(u)})`;
+    pop('l-mascot', prog(lt, 200, 700));
+    ['l-h1', 'l-p', 'l-card'].forEach((id, i) => rv(id, eout(prog(lt, 150 + i * 130, 550))));
+    for (let i = 0; i < 6; i++) rv('l-f' + i, eout(prog(lt, 550 + i * 70, 450)), 12);
+    rv('l-dest', eout(prog(lt, 900, 550)));
+  },
+},
+chapter('ch-est', 'Modo estudiante', '¿Eres estudiante?', 'Encuentra a tu tutor ideal y reserva en minutos.', 'estudia'),
+{
+  id: 'login', url: '/login', dur: 7600, full: true,
+  html: `<header class="mk-head"><img src="logo-lumina.png" alt="Lumina">
+      <p style="font:600 14.5px Nunito;color:var(--gray-500)">¿No tienes cuenta? <b style="font-weight:800;color:var(--blue)">Regístrate</b></p></header>
+    <main class="login">
+      <img id="lg-mascot" src="lumina-saluda.png" alt="" style="height:96px;margin-bottom:12px;transform-origin:50% 100%">
+      <h1 class="h1" style="text-align:center">Bienvenido de nuevo</h1>
+      <p class="sub" style="text-align:center;margin:8px 0 28px">Inicia sesión para buscar tutores o gestionar tus sesiones.</p>
+      <div class="card" id="lg-card" style="width:100%;display:flex;flex-direction:column;gap:20px">
+        <div class="fcol"><label class="lbl">Correo electrónico</label>${fieldHTML('lg-email', 'nombre@correo.com')}</div>
+        <div class="fcol"><label class="lbl">Contraseña</label>${fieldHTML('lg-pass', '••••••••', ' style="padding-right:40px"')}</div>
+        <span class="btn btn-primary btn-block tall" id="lg-btn">Iniciar sesión</span>
+        <div class="or"><i></i>o<i></i></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><span class="btn btn-outline btn-block tall">${I.google}Google</span><span class="btn btn-outline btn-block tall">${I.github}GitHub</span></div>
+      </div>
+    </main>`,
+  script(h) {
+    h.pose(0, 'saluda', 'Primero, inicia sesión con tu cuenta.');
+    h.move(1300, '#lg-email');
+    h.click(2400, '#lg-email');
+    h.cam(2400, '#lg-pass', 1.3, 1000);
+    h.move(3900, '#lg-pass');
+    h.click(4650, '#lg-pass');
+    h.move(5350, '#lg-btn');
+    h.click(6100, '#lg-btn');
+    h.burst(6750, '#lg-btn', 30, 'sparkle');
+    h.pose(6750, 'confirma', '¡Bienvenida, Andrea!');
+  },
+  update(lt) {
+    pop('lg-mascot', prog(lt, 300, 700));
+    rv('lg-card', eout(prog(lt, 450, 550)));
+    typeField('lg-email', typed(EMAIL, lt, 2550, 1200), lt, 2400, 4650);
+    typeField('lg-pass', '•'.repeat(Math.round(8 * prog(lt, 4750, 600))), lt, 4650, 6100);
+    text('lg-btn', lt >= 6100 ? 'Iniciando sesión...' : 'Iniciar sesión');
+    tg('lg-btn', 'disabled', lt >= 6100 && lt < 6750);
+  },
+},
+{
+  id: 'tutores', url: '/tutores', nav: 'tutores', role: 'estudiante', dur: 8400,
+  html: `<div class="scroll" id="sc-tut">${topbar('Andrea López', 'Estudiante')}
+    <h1 class="h1">Tutores</h1><p class="sub">Encuentra el tutor ideal para ti</p>
+    <div class="search" style="margin:24px 0 16px">${I.search}<div class="in"><span class="ph">Busca un tutor por nombre</span></div></div>
+    <div class="row" style="gap:10px;margin-bottom:20px">
+      <span class="trigger" id="t-sel"><span id="t-selval">Todas las materias</span>${I.chev}
+        <div class="pop" id="t-pop">${MATERIAS_OPC.map(m => `<div class="opt"${m === 'Cálculo' ? ' id="t-opt"' : ''}>${m}${I.check}</div>`).join('')}</div></span>
+      <span class="row" id="t-clear" style="gap:6px;margin-left:4px;font:700 13px Nunito;color:var(--blue)">${I.sliders} Limpiar filtros</span>
+    </div>
+    <div class="row" style="justify-content:space-between;margin-bottom:16px">
+      <span style="font:800 15px Nunito" id="t-count"></span>
+      <span class="trigger">Ordenar por: <b style="font-weight:800;color:var(--ink)">Nombre (A–Z)</b>${I.chev}</span>
+    </div>
+    <div class="tgrid">${TUTORES.map(([n, esc, bio, subj, r, c, fr], i) => `<div class="card tcard" id="tc-${i}">
+      ${av(n, 64, 20)}
+      <div class="body">
+        <div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px"><h3>${n}</h3><span style="color:var(--gray-400)">${I.heart}</span></div>
+        <span style="margin:6px 0">${rating(r, c)}</span>
+        <p class="muted" style="margin-bottom:6px">${esc}</p>
+        <p class="bio">${bio}</p>
+        <div class="tags" style="margin-bottom:10px">${subj.map(badge).join('')}</div>
+        <div class="fr">${fr.map(f => `<span>${f}</span>`).join('')}</div>
+        <span class="btn btn-primary btn-block" id="tv-${i}" style="margin-top:12px">Ver perfil</span>
+      </div></div>`).join('')}</div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'estudia', 'Busca tutores y filtra por materia.');
+    h.move(1100, '#t-sel');
+    h.click(2200, '#t-sel');
+    h.cam(2250, '#t-pop', 1.3, 900);
+    h.move(2500, '#t-opt');
+    h.click(3300, '#t-opt');
+    h.cam(3700, null, 1, 900);
+    h.pose(3900, 'estudia', 'Cada tarjeta muestra reseñas, materias y horarios.');
+    h.move(5400, '#tv-' + MARIA);
+    h.click(6600, '#tv-' + MARIA, 1.3);
+  },
+  update(lt) {
+    const f = lt >= 3300;
+    tg('t-pop', 'open', lt >= 2250 && lt < 3300);
+    tg('t-opt', 'sel', f);
+    text('t-selval', f ? 'Cálculo' : 'Todas las materias');
+    show('t-clear', f);
+    text('t-count', f ? '6 tutores encontrados' : '8 tutores encontrados');
+    TUTORES.forEach((t, i) => {
+      const e = $i('tc-' + i);
+      e.style.display = f && !t[3].includes('Cálculo') ? 'none' : '';
+      e.style.opacity = eout(prog(lt, 200 + i * 60, 450));
+    });
+    pageScroll('sc-tut', $i('tc-' + MARIA), eio(prog(lt, 4300, 1200)));
+  },
+},
+{
+  id: 'ficha', url: '/tutores/mf-rojas', role: 'estudiante', dur: 7000,
+  html: `<div class="scroll">${topbar('Andrea López', 'Estudiante')}
+    <span class="row" style="gap:6px;margin-bottom:16px;font:700 13px Nunito;color:var(--blue)">${I.arrowL} Volver a resultados</span>
+    <div class="card row" id="fp-card" style="gap:20px;align-items:flex-start;margin-bottom:24px">
+      ${av(MARIA_N, 92, 24)}
+      <div style="flex:1;min-width:0">
+        <h1 style="font:900 24px/1.25 Nunito">${MARIA_N}</h1>
+        <span style="display:block;margin:8px 0">${rating('4.9', 32)}</span>
+        <p class="muted" style="margin-bottom:8px">${TUTORES[MARIA][1]}</p>
+        <div class="tags" style="margin-bottom:12px">${TUTORES[MARIA][3].map(badge).join('')}</div>
+        <p style="font:600 14.5px/1.625 Nunito;color:var(--gray-500)">${TUTORES[MARIA][2]}</p>
+      </div>
+    </div>
+    <div id="fp-area">
+      <h2 class="h2">Franjas horarias disponibles</h2>
+      <div class="days" id="fp-days">${FRANJAS_MARIA.map(([d, fs]) => `<div><p class="day-lbl">${d}</p><div class="pills">${fs.map(f => `<span class="fpill"${d.startsWith('Mié') && f.startsWith('15') ? ' id="fp-sel"' : ''}>${f}</span>`).join('')}</div></div>`).join('')}</div>
+      <div class="row" id="fp-sum" style="margin-top:24px;justify-content:space-between;gap:16px;border-radius:20px;background:var(--blue-lighter);padding:20px 24px">
+        <p style="font:800 14.5px Nunito">Franja seleccionada: Miércoles · 15:00 – 16:00</p>
+        <span class="btn btn-primary" id="fp-go">Continuar con la reserva</span>
+      </div>
+    </div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'ayuda', 'Elige una de las franjas libres del tutor.');
+    h.cam(1300, '#fp-area', 1.25, 1000);
+    h.move(1500, '#fp-sel');
+    h.click(2700, '#fp-sel');
+    h.burst(2750, '#fp-sel', 14, 'sparkle');
+    h.move(3700, '#fp-go');
+    h.click(4900, '#fp-go', 1.35);
+  },
+  update(lt) {
+    rv('fp-card', eout(prog(lt, 100, 550))); rv('fp-area', eout(prog(lt, 300, 550)));
+    tg('fp-sel', 'act', lt >= 2700);
+    show('fp-sum', lt >= 2700);
+    rv('fp-sum', eout(prog(lt, 2700, 450)), 12);
+  },
+},
+{
+  id: 'confirmar', url: '/tutores/mf-rojas/reservar?franja=f-2481', role: 'estudiante', dur: 4600,
+  html: `<div class="scroll">${topbar('Andrea López', 'Estudiante')}
+    <div style="width:480px;margin:0 auto">
+      <img id="cr-mascot" src="lumina-confirma.png" alt="" style="display:block;height:96px;margin:0 auto 16px;transform-origin:50% 100%">
+      <h1 style="text-align:center;font:900 24px/1.25 Nunito">Confirma tu reserva</h1>
+      <p class="sub" style="text-align:center;margin:8px 0 24px">Revisa los datos antes de confirmar la sesión.</p>
+      <div class="card" id="cr-card">
+        <div class="row" style="gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">${av(MARIA_N, 56, 16)}<p style="font:800 18px Nunito">${MARIA_N}</p></div>
+        <div class="row" style="justify-content:space-between;margin-bottom:12px"><span class="muted">Día</span><b style="font:800 14.5px Nunito">Miércoles 13 de mayo</b></div>
+        <div class="row" style="justify-content:space-between;margin-bottom:20px"><span class="muted">Hora</span><b style="font:800 14.5px Nunito">15:00 – 16:00</b></div>
+        <span class="btn btn-primary btn-block tall" id="cr-ok">Confirmar reserva</span>
+        <span class="btn btn-outline btn-block tall" style="margin-top:12px">Cancelar</span>
+      </div>
+    </div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'confirma', 'Revisa los datos y confirma tu reserva.');
+    h.cam(1000, '#cr-card', 1.25, 1000);
+    h.move(1300, '#cr-ok');
+    h.click(3000, '#cr-ok');
+  },
+  update(lt) {
+    pop('cr-mascot', prog(lt, 200, 700));
+    rv('cr-card', eout(prog(lt, 350, 550)));
+  },
+},
+{
+  id: 'exito', url: '/tutores/mf-rojas/reservar/exito?reserva=r-1042', role: 'estudiante', dur: 6200,
+  html: `<div class="scroll">${topbar('Andrea López', 'Estudiante')}
+    <div style="width:480px;margin:0 auto;text-align:center">
+      <div id="x-hero">
+        <img id="x-mascot" src="lumina-exito.png" alt="" style="display:block;height:128px;margin:0 auto 16px;transform-origin:50% 100%">
+        <h1 id="x-title" style="font:900 24px/1.25 Nunito">¡Reserva confirmada!</h1>
+        <p class="sub" style="margin:8px 0 24px">Tu tutoría con ${MARIA_N} quedó agendada.</p>
+      </div>
+      <div class="card" id="x-card" style="text-align:left;margin-bottom:24px">
+        <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="muted">Tutor</span><b style="font:800 14.5px Nunito">${MARIA_N}</b></div>
+        <div class="row" style="justify-content:space-between"><span class="muted">Cuándo</span><b style="font:800 14.5px Nunito">Miércoles 13 de mayo · 15:00</b></div>
+      </div>
+      <span class="btn btn-primary" id="x-btn">Volver a tutores</span>
+    </div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'exito', '¡Listo! Tu tutoría quedó agendada.');
+    h.burst(450, '#x-mascot', 90, 'confetti');
+    h.burst(650, '#x-title', 20, 'sparkle');
+    h.cam(1200, '#x-hero', 1.35, 1000);
+    h.cam(3400, null, 1, 900);
+    h.move(3700, '#sb-sesiones');
+    h.click(5000, '#sb-sesiones');
+  },
+  update(lt) {
+    pop('x-mascot', prog(lt, 250, 700));
+    ['x-title', 'x-card', 'x-btn'].forEach((id, i) => rv(id, eout(prog(lt, 500 + i * 140, 500))));
+  },
+},
+{
+  id: 'agenda', url: '/mis-sesiones', nav: 'sesiones', role: 'estudiante', dur: 8200,
+  html: `<div class="scroll" id="sc-ag">${topbar('Andrea López', 'Estudiante')}
+    <h1 class="h1">Agenda</h1><p class="sub" style="margin-bottom:24px">Organiza tus próximas tutorías y revisa tu calendario</p>
+    <div class="stats" id="ag-stats">
+      <div class="stat"><p>Próxima sesión</p><b>Mié 13 de may · 15:00</b></div>
+      <div class="stat"><p>Sesiones esta semana</p><b>2</b></div>
+      <div class="stat"><p>Completadas</p><b>2</b></div>
+    </div>
+    <div class="cols" id="ag-cols">
+      <div style="flex:1.3">
+        <div class="card">${calendar('cal', { big: true, marks: { 13: 'conf', 15: 'conf', 19: 'conf', 4: 'comp', 8: 'comp' } })}
+          <div class="legend"><span><i style="background:var(--blue)"></i>Sesión confirmada</span><span><i style="background:var(--green)"></i>Sesión completada</span></div></div>
+        <div class="card"><h3 class="h3">Sesiones recientes</h3>
+          <div class="srow">${datechip(8, 'may')}${av('Carlos Mejía', 36, 13)}<div class="who"><b>Carlos Mejía</b><small>16:00 – 17:00</small></div><span class="btn btn-outline btn-sm" id="ag-rate">Calificar</span></div>
+          <div class="srow">${datechip(4, 'may')}${av(MARIA_N, 36, 13)}<div class="who"><b>${MARIA_N}</b><small>09:00 – 10:00</small></div><span class="row" style="gap:4px;font:800 13.5px Nunito">${I.star}5</span></div>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div class="card" id="ag-prox"><h3 class="h3">Próximas sesiones</h3>
+          ${[[13, MARIA_N, '15:00 – 16:00'], [15, 'Julián Herrera', '10:00 – 11:00'], [19, 'Sofía Martínez', '14:00 – 15:00']]
+            .map(([d, n, t], i) => `<div class="srow" id="ag-p${i}">${datechip(d, 'may')}${av(n, 36, 13)}<div class="who"><b>${n}</b><small>${t}</small></div><span class="status">Confirmada</span></div>`).join('')}</div>
+        <div class="card"><h3 class="h3">Recordatorios</h3><div style="display:flex;flex-direction:column;gap:16px">
+          <div class="rec"><b>Lleva tu material</b><p>Cuaderno, apuntes y calculadora si es necesario.</p></div>
+          <div class="rec"><b>Llega 10 minutos antes</b><p>Para registrarte en el campus y aprovechar la sesión.</p></div>
+          <div class="rec"><b>Revisa la ubicación</b><p>Confirma el campus y el salón de tu tutoría.</p></div></div></div>
+      </div>
+    </div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'docs', 'En tu agenda ves tus próximas sesiones y el calendario.');
+    h.move(1100, '#cal-13');
+    h.cam(1800, '#ag-prox', 1.35, 1000);
+    h.burst(2700, '#ag-p0', 1, 'glow');
+    h.cam(4000, null, 1, 900);
+    h.pose(4300, 'docs', 'Cuando termina una sesión, ya puedes calificarla.');
+    h.move(5400, '#ag-rate');
+    h.click(6600, '#ag-rate', 1.35);
+  },
+  update(lt) {
+    rv('ag-stats', eout(prog(lt, 100, 550))); rv('ag-cols', eout(prog(lt, 280, 550)));
+    pageScroll('sc-ag', $i('ag-rate'), eio(prog(lt, 4300, 1200)));
+  },
+},
+{
+  id: 'calificar', url: '/mis-sesiones/r-0981/calificar', role: 'estudiante', dur: 8800,
+  html: `<div class="scroll">${topbar('Andrea López', 'Estudiante')}
+    <div class="card" id="r-card" style="width:460px;margin:0 auto;text-align:center">
+      <div style="width:64px;margin:0 auto 14px">${av('Carlos Mejía', 64, 20)}</div>
+      <h1 style="font:900 20px/1.25 Nunito">¿Cómo estuvo tu sesión con Carlos Mejía?</h1>
+      <p style="margin:8px 0 24px;font:600 14.5px Nunito;color:var(--gray-500)">Viernes 8 de mayo</p>
+      <div class="stars" id="r-stars">${[0, 1, 2, 3, 4].map(i => `<span class="star" id="st-${i}">${I.starEmpty}</span>`).join('')}</div>
+      <div class="fcol" style="text-align:left;margin-bottom:20px">
+        <label class="lbl">Cuéntanos más (opcional)</label>
+        ${fieldHTML('r-text', 'Explica todo con mucha claridad y tiene mucha paciencia…', ' style="min-height:90px"')}
+      </div>
+      <span class="btn btn-primary btn-block tall" id="r-send">Enviar reseña</span>
+    </div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'estudia', '¿Qué tal estuvo? Tu reseña ayuda a otros estudiantes.');
+    h.cam(900, '#r-stars', 1.4, 1000);
+    h.move(1200, '#st-0');
+    h.move(2300, '#st-2');
+    h.move(3050, '#st-4');
+    h.click(3850, '#st-4');
+    h.burst(3900, '#r-stars', 36, 'sparkle');
+    h.cam(4400, '#r-text', 1.3, 900);
+    h.move(4400, '#r-text');
+    h.click(5200, '#r-text');
+    h.cam(6500, null, 1, 900);
+    h.move(6600, '#r-send');
+    h.click(7400, '#r-send');
+    h.pose(7450, 'confirma', '¡Gracias por tu reseña!');
+    h.burst(7450, '#r-send', 50, 'confetti');
+  },
+  update(lt) {
+    rv('r-card', eout(prog(lt, 80, 550)));
+    let n = 0;
+    if (lt >= 2000) n = 1;
+    if (lt >= 2300) n = 1 + Math.round(2 * eio(prog(lt, 2300, 650)));
+    if (lt >= 3050) n = 3 + Math.round(2 * eio(prog(lt, 3050, 650)));
+    for (let i = 0; i < 5; i++) tg('st-' + i, 'on', i < n);
+    tg('r-send', 'disabled', lt < 3850);
+    typeField('r-text', typed(RESENA, lt, 5300, 1100), lt, 5200, 7400);
+  },
+},
+{
+  id: 'materias', url: '/materias', nav: 'materias', role: 'estudiante', dur: 7400,
+  html: `<div class="scroll">${topbar('Andrea López', 'Estudiante')}
+    <h1 class="h1">Materias</h1><p class="sub">Explora las materias disponibles y encuentra apoyo académico</p>
+    <div class="search" style="margin:24px 0">${I.search}<div class="in" id="m-search"><span id="m-search-q"></span><i class="caret" id="m-search-caret"></i><span class="ph" id="m-search-ph">¿Qué materia quieres explorar?</span></div></div>
+    <p style="margin-bottom:16px;font:800 15px Nunito" id="m-count"></p>
+    <div class="mgrid" id="m-grid">${MATERIAS.map(([m, c], i) => {
+      const [bg, fg] = MATERIA[hash(m) % MATERIA.length];
+      return `<div class="card mcard" id="mc-${i}"><i style="background:var(${bg});color:var(${fg})">${I.book}</i><h3>${m}</h3>
+        <p>${c} ${c === 1 ? 'tutor disponible' : 'tutores disponibles'}</p><span class="btn btn-primary btn-block" id="mv-${i}">Ver tutores</span></div>`;
+    }).join('')}</div>
+    <p id="m-more" style="margin-top:20px;text-align:center;font:700 13.5px Nunito;color:var(--blue)">Ver las ${MATERIAS.length} materias</p>
+  </div>`,
+  script(h) {
+    h.pose(0, 'estudia', 'Explora las materias con tutores disponibles.');
+    h.move(1000, '#m-search');
+    h.click(2100, '#m-search');
+    h.cam(3400, '#mc-0', 1.4, 1000);
+    h.burst(4200, '#mc-0', 1, 'glow');
+    h.move(3500, '#mv-0');
+    h.cam(5000, null, 1, 900);
+    h.move(5100, '#sb-perfil');
+    h.click(6400, '#sb-perfil');
+  },
+  update(lt) {
+    const q = typed('cálculo', lt, 2200, 900), buscando = q.length > 0;
+    const hits = MATERIAS.filter(([m]) => m.toLowerCase().includes(q));
+    const top = buscando ? hits : hits.slice(0, 9);
+    typeField('m-search', q, lt, 2100, 4400);
+    text('m-count', buscando ? `${hits.length} ${hits.length === 1 ? 'materia disponible' : 'materias disponibles'}` : `Top 9 de ${MATERIAS.length} materias`);
+    show('m-more', !buscando);
+    MATERIAS.forEach((m, i) => {
+      const e = $i('mc-' + i);
+      e.style.display = top.includes(m) ? '' : 'none';
+      e.style.opacity = eout(prog(lt, 200 + i * 55, 450));
+    });
+  },
+},
+{
+  id: 'perfil', url: '/mi-perfil', nav: 'perfil', role: 'estudiante', dur: 10000,
+  html: `<div class="scroll">${topbar('Andrea López', 'Estudiante', 'pf-user')}
+    <h1 class="h1">Mi perfil</h1><p class="sub" style="margin-bottom:24px">Mantén tus datos actualizados.</p>
+    <div class="card" id="pf-card" style="display:flex;flex-direction:column;gap:20px">
+      ${av('Andrea López', 76, 24)}
+      <div class="fcol"><label class="lbl">Nombre completo</label><div class="field">Andrea López</div></div>
+      <div class="fcol"><label class="lbl">Correo electrónico</label><div class="field" style="color:var(--gray-500)">${EMAIL}</div></div>
+      <div class="fcol"><label class="lbl">Escuela</label>${fieldHTML('pf-esc', 'Ej. Preparatoria 5')}</div>
+      <p id="pf-ok" style="font:700 13.5px Nunito;color:var(--green-dark)">Cambios guardados.</p>
+      <span class="btn btn-primary btn-block tall" id="pf-save"></span>
+    </div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'ayuda', 'Mantén tus datos al día.');
+    h.move(1000, '#pf-esc');
+    h.click(2100, '#pf-esc');
+    h.cam(2100, '#pf-esc', 1.35, 1000);
+    h.cam(3700, null, 1, 900);
+    h.move(3800, '#pf-save');
+    h.click(4900, '#pf-save');
+    h.pose(5500, 'confirma', '¡Cambios guardados!');
+    h.burst(5500, '#pf-save', 26, 'sparkle');
+    h.pose(6300, 'ayuda', 'Ahora veamos el lado del tutor…');
+    h.move(6300, '#pf-user');
+    h.click(7400, '#pf-user');
+    h.move(7700, '#pf-user-out');
+    h.click(8500, '#pf-user-out', 1.4);
+  },
+  update(lt) {
+    rv('pf-card', eout(prog(lt, 100, 550)));
+    typeField('pf-esc', typed(ESCUELA, lt, 2250, 1200), lt, 2100, 4900);
+    text('pf-save', lt >= 4900 && lt < 5500 ? 'Guardando...' : 'Guardar cambios');
+    tg('pf-save', 'disabled', lt >= 4900 && lt < 5500);
+    show('pf-ok', lt >= 5500);
+    tg('pf-user-menu', 'open', lt >= 7450);
+  },
+},
+chapter('ch-tut', 'Modo tutor', '¿Eres tutor?', 'Publica tus horarios y comparte lo que sabes.', 'docs'),
+{
+  id: 'franjas', url: '/mis-franjas', nav: 'franjas', role: 'tutor', dur: 13000,
+  html: `<div class="scroll">${topbar(MARIA_N, 'Tutor')}
+    <h1 class="h1">Mis franjas horarias</h1>
+    <p class="sub" style="margin-bottom:24px">Publica horarios futuros. El sistema evita franjas que se solapen con otras ya publicadas.</p>
+    <div class="card" id="ff-card" style="margin-bottom:32px">
+      <div class="fform">
+        <div class="fgroup"><label>Día</label>
+          <div class="ftrig" id="ff-dia" style="min-width:160px">${I.calDays}<span class="v ph" id="ff-dia-v">Selecciona</span>${I.chev}</div>
+          <div class="pop" id="ff-cal" style="min-width:0">${calendar('ffd', { disableBefore: 11 })}</div></div>
+        <div class="fgroup"><label>Hora inicio</label>
+          <div class="ftrig" id="ff-hi" style="width:110px"><span class="v ph" id="ff-hi-v">--:--</span>${I.chev}</div>
+          <div class="pop" id="ff-hi-pop">${HORAS.map(h => `<div class="opt"${h === '10:00' ? ' id="ff-hi-o"' : ''}>${h}${I.check}</div>`).join('')}</div></div>
+        <div class="fgroup"><label>Hora fin</label>
+          <div class="ftrig" id="ff-hf" style="width:110px"><span class="v ph" id="ff-hf-v">--:--</span>${I.chev}</div>
+          <div class="pop" id="ff-hf-pop">${HORAS.map(h => `<div class="opt"${h === '11:00' ? ' id="ff-hf-o"' : ''}>${h}${I.check}</div>`).join('')}</div></div>
+        <span class="btn btn-primary" id="ff-pub" style="border-radius:14px;padding:14px 20px">+ Publicar franja</span>
+      </div>
+    </div>
+    <h2 class="h2">Tus franjas publicadas</h2>
+    <div class="days" id="ff-list">${FRANJAS_MARIA.map(([d, fs]) => `<div><p class="day-lbl">${d}</p><div class="pills">${fs.map(f => `<span class="fpill">${f}${d.startsWith('Mié') && f.startsWith('15') ? '<span class="res">· Reservada</span>' : ''}</span>`).join('')}</div></div>`).join('')}
+      <div id="ff-new"><p class="day-lbl">Viernes 15 de mayo</p><div class="pills"><span class="fpill">10:00 – 11:00</span></div></div></div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'docs', 'Publica aquí tus horarios disponibles.');
+    h.cam(900, '#ff-card', 1.2, 1000);
+    h.move(1200, '#ff-dia');
+    h.click(2250, '#ff-dia');
+    h.cam(2400, '#ff-cal', 1.35, 900);
+    h.move(2600, '#ffd-15');
+    h.click(3650, '#ffd-15');
+    h.cam(3800, '#ff-card', 1.2, 900);
+    h.move(3900, '#ff-hi');
+    h.click(4950, '#ff-hi');
+    h.move(5200, '#ff-hi-o');
+    h.click(6250, '#ff-hi-o');
+    h.move(6450, '#ff-hf');
+    h.click(7500, '#ff-hf');
+    h.move(7750, '#ff-hf-o');
+    h.click(8800, '#ff-hf-o');
+    h.move(9000, '#ff-pub');
+    h.click(10050, '#ff-pub');
+    h.pose(10200, 'confirma', '¡Franja publicada! Ya la ven los estudiantes.');
+    h.burst(10200, '#ff-new', 70, 'confetti');
+    h.cam(10300, '#ff-list', 1.2, 900);
+    h.cam(11600, null, 1, 900);
+    h.move(11500, '#sbt-sesiones');
+    h.click(12600, '#sbt-sesiones');
+  },
+  update(lt) {
+    rv('ff-card', eout(prog(lt, 100, 550)));
+    tg('ff-cal', 'open', lt >= 2300 && lt < 3650);
+    tg('ff-hi-pop', 'open', lt >= 5000 && lt < 6250);
+    tg('ff-hf-pop', 'open', lt >= 7550 && lt < 8800);
+    const dia = lt >= 3650, hi = lt >= 6250, hf = lt >= 8800;
+    tg('ffd-15', 'sel', dia);
+    tg('ff-hi-o', 'sel', hi); tg('ff-hf-o', 'sel', hf);
+    text('ff-dia-v', dia ? '15 may' : 'Selecciona'); tg('ff-dia-v', 'ph', !dia);
+    text('ff-hi-v', hi ? '10:00' : '--:--'); tg('ff-hi-v', 'ph', !hi);
+    text('ff-hf-v', hf ? '11:00' : '--:--'); tg('ff-hf-v', 'ph', !hf);
+    tg('ff-pub', 'disabled', !hf);
+    show('ff-new', lt >= 10150);
+    tg('ff-new', 'pop-in', lt >= 10150 && lt < 10700);
+  },
+},
+{
+  id: 'tsesiones', url: '/mis-sesiones', nav: 'sesiones', role: 'tutor', dur: 6400,
+  html: `<div class="scroll">${topbar(MARIA_N, 'Tutor')}
+    <h1 class="h1">Mis sesiones</h1><p class="sub" style="margin-bottom:24px">Sesiones que tus estudiantes han reservado.</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${[[13, 'Andrea López', '15:00 – 16:00', 0], [14, 'Tomás Rivera', '08:00 – 09:00', 0], [4, 'Andrea López', '09:00 – 10:00', 1]]
+        .map(([d, n, t, done], i) => `<div class="card tsrow" id="ts-${i}">${datechip(d, 'may', 1)}${av(n, 36, 13)}<div class="who"><b>${n}</b><small>${t}</small></div><span class="status${done ? ' done' : ''}">${done ? 'Completada' : 'Confirmada'}</span></div>`).join('')}
+    </div>
+  </div>`,
+  script(h) {
+    h.pose(0, 'docs', 'Aquí ves quién reservó tus franjas.');
+    h.move(1100, '#ts-0');
+    h.cam(1500, '#ts-0', 1.35, 1000);
+    h.burst(2400, '#ts-0', 1, 'glow');
+    h.burst(2500, '#ts-0', 22, 'sparkle');
+    h.pose(2500, 'exito', '¡Andrea reservó tu franja del miércoles!');
+    h.cam(4300, null, 1, 900);
+  },
+  update(lt) {
+    for (let i = 0; i < 3; i++) rv('ts-' + i, eout(prog(lt, 150 + i * 120, 500)));
+  },
+},
+{
+  id: 'cierre', url: '/', dur: 5200, closing: true,
+  html: `<div class="m"><div class="bob"><img id="c-mascot" src="lumina-saluda.png" alt=""></div><i class="shadow"></i></div>
+    <img class="c-logo" id="c-logo" src="logo-lumina.png" alt="Lumina">
+    <h1 id="c-tag">Tutorías presenciales, sin complicaciones.</h1>
+    <p id="c-sub">Reserva, asiste y aprende: todo en un solo lugar.</p>
+    <span class="btn btn-primary" id="c-cta">Empieza hoy en lumina.app</span>`,
+  script(h) {
+    h.pose(0, 'saluda', '¡Nos vemos en Lumina!');
+    h.move(100, { x: 1720, y: 1020 });
+    h.burst(1400, '#c-mascot', 40, 'sparkle');
+    h.cam(1200, '#c-tag', 1.06, 3200);
+  },
+  update(lt) {
+    const d = eio(prog(lt, 100, 800));
+    device.style.opacity = 1 - d;
+    device.style.transform = `scale(${lerp(1, .94, d)})`;
+    $i('closing').style.opacity = prog(lt, 500, 600);
+    pop('c-mascot', prog(lt, 600, 750));
+    ['c-logo', 'c-tag', 'c-sub', 'c-cta'].forEach((id, i) => rv(id, eout(prog(lt, 1000 + i * 200, 550))));
+    const hide = eio(prog(lt, 0, 400));
+    host.style.opacity = 1 - hide;
+    host.style.transform = `scale(${1 - hide * .4})`;
+    curAlpha = 1 - prog(lt, 200, 500);
+    fade.style.opacity = prog(lt, 4300, 900);
+  },
+},
+];
+
+// ---------- build DOM + master timeline ----------
+const stage = $('#stage'), viewport = $('#viewport');
+stage.prepend($('#tpl-device').content.cloneNode(true));
+device = $('.device');
+const app = $('#app');
+// sidebar nav, same items as components/app-sidebar.tsx
+const sbItem = (nav, icon, label, pre) => `<a class="sb-item" data-nav="${nav}" id="${pre}-${nav}">${I[icon]}<span>${label}</span></a>`;
+$('#nav-estudiante').innerHTML = [['tutores', 'cap', 'Tutores'], ['materias', 'book', 'Materias'], ['sesiones', 'calCheck', 'Mis sesiones'], ['perfil', 'user', 'Perfil']].map(a => sbItem(...a, 'sb')).join('');
+$('#nav-tutor').innerHTML = [['perfil', 'user', 'Mi perfil'], ['franjas', 'calDays', 'Mis franjas horarias'], ['sesiones', 'clock', 'Mis sesiones']].map(a => sbItem(...a, 'sbt')).join('');
+const navs = [...document.querySelectorAll('[data-nav]')];
+SCENES.forEach(s => {
+  if (s.closing) s.el = $('#closing');
+  else if (s.chapter) { s.el = document.createElement('section'); s.el.className = 'chapter'; viewport.append(s.el); }
+  else { s.el = document.createElement('section'); s.el.className = 'scene' + (s.full ? ' full' : ''); app.append(s.el); }
+  s.el.innerHTML = s.html;
+});
+['ayuda', 'confirma', 'docs', 'estudia', 'exito', 'saluda'].forEach(p => { new Image().src = `lumina-${p}.png`; });
+
+// camera timings (ms): establishing zoom-out, click push-in, hold, pull-back
+const EST = 1000, PUSH = 900, HOLD = 1600, PULL = 900;
+const CAM = [], CUR = [], CLK = [], POSE = [], BURST = [];
+const q = t => {
+  if (t === null || typeof t === 'object') return t;
+  const e = document.querySelector(t);
+  if (!e) console.warn('[promo] selector not found:', t);
+  return e;
+};
+let T0 = 0;
+SCENES.forEach(s => {
+  s.start = T0;
+  const at = t => T0 + t;
+  if (!s.chapter) CAM.push({ T: at(0), el: null, s: 1, d: EST });
+  s.script({
+    cam: (t, sel, z = 1.2, d = 900) => CAM.push({ T: at(t), el: q(sel), s: z, d }),
+    move: (t, sel) => CUR.push({ T: at(t), el: q(sel) }),
+    click: (t, sel, z = 0, camSel) => {
+      CLK.push({ T: at(t), el: q(sel) });
+      if (z) CAM.push({ T: at(t + 60), el: q(camSel || sel), s: z, d: PUSH, push: true });
+    },
+    pose: (t, p, text) => POSE.push({ T: at(t), p, say: text }),
+    burst: (t, sel, n, type = 'confetti') => BURST.push({ T: at(t), el: q(sel), n, type }),
+  });
+  T0 += s.dur;
+});
+const TOTAL = T0;
+[CAM, CUR, CLK, POSE, BURST].forEach(a => a.sort((x, y) => x.T - y.T));
+// a push-in holds, then pulls back — unless the next camera move or a chapter card comes first
+const chapterAt = SCENES.filter(s => s.chapter).map(s => s.start);
+for (let i = CAM.length - 1; i >= 0; i--) {
+  const k = CAM[i], next = CAM[i + 1], end = k.T + HOLD + PULL;
+  if (k.push && (!next || next.T >= end) && !chapterAt.some(t => t > k.T && t < end)) CAM.splice(i + 1, 0, { T: k.T + HOLD, el: null, s: 1, d: PULL });
+}
+POSE.forEach((p, i) => { const o = POSE[(i - 1 + POSE.length) % POSE.length]; p.pc = o.p !== p.p; p.sc = o.say !== p.say; });
+
+// ---------- camera + cursor math (stage space = 1600x900 before camera) ----------
+const vp = { x: 0, y: 0, k: 1 };
+let applied = { s: 1, x: 0, y: 0 };
+function center(t) {
+  if (!t || !t.getBoundingClientRect) return t || { x: W / 2, y: H / 2 };
+  const r = t.getBoundingClientRect(), s = stage.getBoundingClientRect(), k = vp.k * applied.s;
+  return { x: (r.left + r.width / 2 - s.left) / k, y: (r.top + r.height / 2 - s.top) / k };
+}
+// page scroll: slide a scene's .scroll so `el` ends up in view (u: 0 → 1)
+function pageScroll(rootId, el, u) {
+  const root = $i(rootId), k = vp.k * applied.s;
+  const top = (el.getBoundingClientRect().top - root.getBoundingClientRect().top) / k;
+  const max = Math.max(0, root.offsetHeight - SCENE_H);
+  root.style.transform = `translateY(${-clamp(top + el.offsetHeight - SCENE_H + 80, 0, max) * u}px)`;
+}
+// zoom targets sit dead-center on screen (no clamping to the stage edges)
+function camTarget(k) {
+  if (!k.el) return { s: 1, fx: W / 2, fy: H / 2 };
+  const p = center(k.el);
+  return { s: k.s, fx: p.x, fy: p.y };
+}
+function camAt(T) {
+  const i = findLast(CAM, T), k = CAM[i], a = camTarget(CAM[(i - 1 + CAM.length) % CAM.length]), b = camTarget(k);
+  const u = eio(clamp((T - k.T) / k.d)), s = lerp(a.s, b.s, u);
+  return { s, x: W / 2 - s * lerp(a.fx, b.fx, u), y: H / 2 - s * lerp(a.fy, b.fy, u) };
+}
+// long jumps: fast 300ms dash to an approach point, then a slow 650ms precise approach
+const DASH = 300, APPROACH = 650;
+function curAt(T) {
+  let i = findLast(CUR, T); const wrapped = i < 0; if (wrapped) i = CUR.length - 1;
+  const k = CUR[i], dt = wrapped ? 1e9 : T - k.T;
+  const a = center(CUR[(i - 1 + CUR.length) % CUR.length].el), b = center(k.el);
+  const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 1;
+  if (dist < 150) {
+    const u = eio(clamp(dt / APPROACH));
+    return { x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u), el: k.el, arrived: dt >= APPROACH };
+  }
+  const ux = dx / dist, uy = dy / dist, ap = { x: b.x - ux * 70 - uy * 22, y: b.y - uy * 70 + ux * 22 };
+  let p;
+  if (dt < DASH) { const u = eout(dt / DASH); p = { x: lerp(a.x, ap.x, u), y: lerp(a.y, ap.y, u) }; }
+  else { const u = eio(clamp((dt - DASH) / APPROACH)); p = { x: lerp(ap.x, b.x, u), y: lerp(ap.y, b.y, u) }; }
+  return { ...p, el: k.el, arrived: dt >= DASH + APPROACH };
+}
+const toScreen = (p, c) => ({ x: vp.x + vp.k * (c.x + c.s * p.x), y: vp.y + vp.k * (c.y + c.s * p.y) });
+
+// ---------- canvas overlay: cursor, trail, speed lines, ripples, particles ----------
+const cv = $('#fx'), ctx = cv.getContext('2d');
+let dpr = 1;
+function resize() {
+  vp.k = Math.min(innerWidth / W, innerHeight / H);
+  vp.x = (innerWidth - W * vp.k) / 2; vp.y = (innerHeight - H * vp.k) / 2;
+  viewport.style.transform = `translate(${vp.x}px,${vp.y}px) scale(${vp.k})`;
+  dpr = devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+}
+addEventListener('resize', resize); resize();
+
+const ARROW = new Path2D('M0 0L0 21.5L5.4 16.4L9.2 24.8L12.9 23.2L9.2 15H16.6Z');
+const CONF = ['#58cc02', '#2f6fee', '#f2a93b', '#8b5cf6'];
+const SPARK = ['#f2a93b', '#58cc02', '#2f6fee', '#8b5cf6'], SPARK_ON_GREEN = ['#ffffff', '#fef2de', '#f2a93b'];
+let hist = [], lastP = null, lastNow = 0, vel = 0, dir = { x: 1, y: 0 };
+
+function star4(x, y, s) {
+  ctx.beginPath(); ctx.moveTo(x, y - s);
+  ctx.quadraticCurveTo(x, y, x + s, y); ctx.quadraticCurveTo(x, y, x, y + s);
+  ctx.quadraticCurveTo(x, y, x - s, y); ctx.quadraticCurveTo(x, y, x, y - s); ctx.fill();
+}
+// one-shot celebrations: confetti burst, twinkling sparkles, or a green glow around the element
+function drawBurst(b, dt, seed, cam) {
+  if (dt < 0 || dt > 3000) return;
+  const r = b.el.getBoundingClientRect(), onChapter = !!b.el.closest('.chapter');
+  const o = { x: r.left + r.width / 2, y: r.top + r.height / 2 }, K = vp.k * (onChapter ? 1 : cam.s);
+  const R = m => rnd(seed + m);
+  if (b.type === 'confetti') {
+    const e = 1 - Math.exp(-dt / 600), a = 1 - prog(dt, 1900, 1000);
+    for (let j = 0; j < b.n; j++) {
+      const ang = -Math.PI / 2 + (R(j * 7 + 1) - .5) * 2.6, sp = .25 + .55 * R(j * 7 + 2);
+      const x = Math.cos(ang) * sp * 600 * e, y = Math.sin(ang) * sp * 600 * e + 1.1e-4 * dt * dt;
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(o.x + x * K, o.y + y * K);
+      ctx.rotate(R(j * 7 + 3) * 6.28 + dt * .008 * (R(j * 7 + 4) - .5) * 2);
+      ctx.fillStyle = CONF[j % 4];
+      if (j % 3 === 0) { ctx.beginPath(); ctx.arc(0, 0, 4 * K, 0, 7); ctx.fill(); }
+      else { ctx.scale(1, Math.cos(dt * .012 + R(j * 7 + 5) * 6)); ctx.fillRect(-4 * K, -7 * K, 8 * K, 14 * K); }
+      ctx.restore();
+    }
+  } else if (b.type === 'sparkle') {
+    if (dt > 1300) return;
+    const pal = onChapter ? SPARK_ON_GREEN : SPARK, base = Math.max(r.width, r.height) / 2;
+    for (let j = 0; j < b.n; j++) {
+      const ang = j / b.n * 6.283 + R(j * 5 + 1) * .6;
+      const dist = base + (14 + 70 * R(j * 5 + 2)) * K * eout(clamp(dt / 900));
+      const size = (4 + 7 * R(j * 5 + 3)) * K * (1 - prog(dt, 550, 750)) * (.7 + .3 * Math.sin(dt * .025 + j));
+      if (size <= 0) continue;
+      ctx.fillStyle = pal[j % pal.length];
+      star4(o.x + Math.cos(ang) * dist, o.y + Math.sin(ang) * dist, size);
+    }
+  } else if (b.type === 'glow') {
+    [0, 380].forEach(delay => {
+      const u = clamp((dt - delay) / 900); if (u <= 0 || u >= 1) return;
+      const pad = (4 + 18 * eout(u)) * K;
+      ctx.strokeStyle = `rgba(88,204,2,${.65 * (1 - u)})`; ctx.lineWidth = 3 * K;
+      ctx.beginPath(); ctx.roundRect(r.left - pad, r.top - pad, r.width + pad * 2, r.height + pad * 2, 20 * K + pad); ctx.stroke();
+    });
+  }
+}
+
+function draw(T, now, cam, cur, press) {
+  const k = vp.k;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  ctx.lineCap = 'round';
+
+  BURST.forEach((b, i) => drawBurst(b, T - b.T, i * 1000, cam));
+
+  CLK.forEach(c => {
+    const dt = T - c.T; if (dt < 0 || dt > 800) return;
+    const o = toScreen(center(c.el), cam), K = k * cam.s;
+    [0, 140].forEach(delay => {
+      const u = clamp((dt - delay) / 650); if (u <= 0 || u >= 1) return;
+      ctx.strokeStyle = `rgba(47,111,238,${.55 * (1 - u)})`;
+      ctx.lineWidth = (1 + 3 * (1 - u)) * K;
+      ctx.beginPath(); ctx.arc(o.x, o.y, (10 + 40 * eout(u)) * K, 0, 7); ctx.stroke();
+    });
+    const u = clamp(dt / 400);
+    ctx.fillStyle = `rgba(47,111,238,${.14 * (1 - u)})`;
+    ctx.beginPath(); ctx.arc(o.x, o.y, (8 + 24 * eout(u)) * K, 0, 7); ctx.fill();
+  });
+
+  // velocity + trail (screen space)
+  const p = toScreen(cur, cam);
+  const moved = lastP ? Math.hypot(p.x - lastP.x, p.y - lastP.y) : 0;
+  if (moved > 600 * k) hist = []; // scrub jump
+  const v = lastP ? moved / Math.max(1, now - lastNow) / k : 0;
+  vel = lerp(vel, v, .5);
+  if (moved > .5) dir = { x: (p.x - lastP.x) / moved, y: (p.y - lastP.y) / moved };
+  hist.push(p); if (hist.length > 10) hist.shift();
+  lastP = p; lastNow = now;
+  if (curAlpha <= 0) return;
+
+  const bx = 6 * k, by = 10 * k; // arrow body offset from the tip
+  for (let i = 1; i < hist.length; i++) {
+    const f = i / hist.length;
+    ctx.strokeStyle = `rgba(47,111,238,${.26 * f * f * curAlpha})`;
+    ctx.lineWidth = (2 + 9 * f) * k;
+    ctx.beginPath(); ctx.moveTo(hist[i - 1].x + bx, hist[i - 1].y + by); ctx.lineTo(hist[i].x + bx, hist[i].y + by); ctx.stroke();
+  }
+  const sI = clamp((vel - 1.1) / 2.5);
+  if (sI > 0) {
+    const nx = -dir.y, ny = dir.x;
+    [-1.5, -.5, .5, 1.5].forEach((o, j) => {
+      const len = (26 + 60 * sI) * k * (j % 2 ? .65 : 1);
+      const sx = p.x + bx - dir.x * 18 * k + nx * o * 8 * k, sy = p.y + by - dir.y * 18 * k + ny * o * 8 * k;
+      ctx.strokeStyle = `rgba(30,42,74,${.32 * sI * curAlpha})`;
+      ctx.lineWidth = 2 * k;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx - dir.x * len, sy - dir.y * len); ctx.stroke();
+    });
+  }
+
+  ctx.save();
+  ctx.globalAlpha = curAlpha;
+  ctx.translate(p.x, p.y);
+  const sc = k * 1.3 * press;
+  ctx.scale(sc, sc);
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(30,42,74,.28)'; ctx.shadowBlur = 8 * k; ctx.shadowOffsetY = 3 * k;
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.4; ctx.stroke(ARROW);
+  ctx.shadowColor = 'transparent';
+  ctx.fillStyle = '#1e2a4a'; ctx.fill(ARROW);
+  ctx.restore();
+}
+
+// ---------- master loop ----------
+const urlPath = $('#url-path'), loadbar = $('#loadbar'), navEst = $('#nav-estudiante'), navTut = $('#nav-tutor');
+const dev = $('#dev'), devRange = $('#dev-range'), devT = $('#dev-t');
+const DIAG = Math.hypot(W, H);
+let t0 = 0, paused = false, pT = 0, hovered = null, pressed = null;
+
+function setHover(el, on) {
+  el.classList.toggle('is-hover', on);
+  const g = el.closest('[data-group]'); if (g && g !== el) g.classList.toggle('is-hover', on);
+}
+
+function frame(now) {
+  const T = paused ? pT : ((now - t0) % TOTAL + TOTAL) % TOTAL;
+
+  // scene + transition: pages crossfade; chapters cover the previous page and lift off the next one
+  const si = SCENES.findIndex(s => T < s.start + s.dur), sc = SCENES[si], lt = T - sc.start;
+  const prev = SCENES[(si - 1 + SCENES.length) % SCENES.length];
+  const covered = sc.chapter || prev.chapter;
+  device.style.opacity = 1; device.style.transform = '';
+  fade.style.opacity = 0; host.style.opacity = 1; host.style.transform = ''; curAlpha = 1;
+  SCENES.forEach(s => {
+    const a = s === sc ? (covered ? 1 : eout(prog(lt, 0, 650))) : s === prev ? (covered ? 1 : 1 - prog(lt, 0, 480)) : 0;
+    s.el.style.opacity = a;
+    s.el.style.visibility = s === sc || s === prev ? 'visible' : 'hidden';
+    if (!s.chapter) s.el.style.transform = s === sc && a < 1 ? `translateY(${(1 - a) * 22}px)` : '';
+  });
+  // the closing scene fades the whole device out, so it must not re-run over the next loop's intro
+  if (!prev.closing) prev.update(prev.dur);
+  sc.update(lt);
+  if (sc.url && urlPath.textContent !== sc.url) urlPath.textContent = sc.url;
+  if (sc.role) { navEst.style.display = sc.role === 'tutor' ? 'none' : ''; navTut.style.display = sc.role === 'tutor' ? '' : 'none'; }
+  if (!sc.chapter) navs.forEach(n => n.classList.toggle('active', n.dataset.nav === sc.nav));
+  loadbar.style.width = eout(prog(lt, 0, 750)) * 100 + '%';
+  loadbar.style.opacity = 1 - prog(lt, 750, 300);
+
+  // camera
+  const cam = camAt(T);
+  stage.style.transform = `translate(${cam.x}px,${cam.y}px) scale(${cam.s})`;
+  applied = cam;
+
+  // cursor, hover, press
+  const cur = curAt(T);
+  const tgt = cur.arrived && cur.el && cur.el.nodeType ? cur.el : null;
+  if (tgt !== hovered) { hovered && setHover(hovered, false); tgt && setHover(tgt, true); hovered = tgt; }
+  const c = CLK.find(c => T >= c.T && T < c.T + 120), pe = c ? c.el : null;
+  if (pe !== pressed) { pressed && pressed.classList.remove('is-press'); pe && pe.classList.add('is-press'); pressed = pe; }
+  const press = c ? 1 - .1 * Math.sin(Math.PI * clamp((T - c.T) / 100)) : 1;
+
+  // chapter card: circle wipe out of the last click, then lifts like a curtain
+  if (sc.chapter) {
+    const r = DIAG * eio(prog(lt, 0, 900)), ox = cam.x + cam.s * cur.x, oy = cam.y + cam.s * cur.y;
+    sc.el.style.clipPath = `circle(${r}px at ${ox}px ${oy}px)`;
+    sc.el.style.transform = '';
+    host.style.opacity = 1 - prog(lt, 0, 300);
+    curAlpha = 1 - prog(lt, 150, 300);
+  } else if (prev.chapter) {
+    const u = eio(prog(lt, 0, 950));
+    prev.el.style.clipPath = 'none';
+    prev.el.style.transform = `translateY(${-u * 100}%)`;
+    if (u >= 1) prev.el.style.visibility = 'hidden';
+    const hu = prog(lt, 800, 600);
+    host.style.opacity = clamp(hu * 4);
+    host.style.transform = `translateY(${(1 - eout(hu)) * 40}px) scale(${popScale(hu)})`;
+    curAlpha = prog(lt, 900, 300);
+  }
+
+  // mascot host: swap pose, squash & stretch on change, caption slide-in
+  let pi = findLast(POSE, T); const pw = pi < 0; if (pw) pi = POSE.length - 1;
+  const P = POSE[pi], pdt = pw ? 1e9 : T - P.T;
+  if (hostImg.dataset.p !== P.p) { hostImg.src = `lumina-${P.p}.png`; hostImg.dataset.p = P.p; }
+  if (say.textContent !== P.say) say.textContent = P.say;
+  let sx = 1, sy = 1;
+  if (P.pc && pdt < 160) {
+    if (pdt < 60) { const u = pdt / 60; sx = 1 + .14 * u; sy = 1 - .14 * u; }
+    else if (pdt < 120) { const u = (pdt - 60) / 60; sx = lerp(1.14, .94, u); sy = lerp(.86, 1.08, u); }
+    else { const u = (pdt - 120) / 40; sx = lerp(.94, 1, u); sy = lerp(1.08, 1, u); }
+  }
+  hostImg.style.transform = `translateX(-50%) scale(${sx},${sy})`;
+  const cu = P.sc ? eout(prog(pdt, 0, 380)) : 1;
+  say.style.opacity = cu; say.style.transform = `translateX(${(1 - cu) * -10}px)`;
+
+  draw(T, now, cam, cur, press);
+
+  if (!dev.hidden) {
+    if (document.activeElement !== devRange) devRange.value = T;
+    devT.textContent = `${(T / 1000).toFixed(1)}s / ${(TOTAL / 1000).toFixed(1)}s · ${sc.id}${paused ? ' · pausa' : ''}`;
+  }
+  requestAnimationFrame(frame);
+}
+
+// dev scrubber: open with #dev — space toggles pause
+if (location.hash === '#dev') {
+  dev.hidden = false; devRange.max = TOTAL;
+  devRange.addEventListener('input', () => { const v = +devRange.value; if (paused) pT = v; else t0 = performance.now() - v; });
+  addEventListener('keydown', e => {
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    const now = performance.now();
+    if (paused) t0 = now - pT; else pT = ((now - t0) % TOTAL + TOTAL) % TOTAL;
+    paused = !paused;
+  });
+}
+
+Promise.all([document.fonts ? document.fonts.ready : 0, new Promise(r => addEventListener('load', r))])
+  .then(() => { t0 = performance.now(); requestAnimationFrame(frame); });
+</script>
+</body>
+</html>
